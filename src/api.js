@@ -1,53 +1,41 @@
 import axios from 'axios';
 
-// const API_BASE_URL = 'http://localhost:8080/api';    //Для локалки
-const API_BASE_URL = '/api';    //Для deploy
+ const API_BASE_URL = 'http://localhost:8080/api';    // For local development
+//const API_BASE_URL = '/api';    // For deployment
 
-// Компетиции
-export const fetchCompetitions = () => {
-    return axios.get(`${API_BASE_URL}/getCompetitions`);
+// Patients
+export const fetchPatients = () => {
+    return axios.get(`${API_BASE_URL}/getPatients`);
 };
 
-export const fetchCompetition = (competitionId) => {
-    return axios.get(`${API_BASE_URL}/getCompetition?competitionId=${competitionId}`)
-}
-
-export const createCompetition = (competition) => {
-    return axios.post(`${API_BASE_URL}/createCompetition`, competition);
+export const fetchPatient = (patientId) => {
+    return axios.get(`${API_BASE_URL}/getPatient?patientId=${patientId}`);
 };
 
-export const updateCompetition = (competition) => {
-    return axios.put(`${API_BASE_URL}/editCompetition`, competition);
+export const createPatient = (patient) => {
+    return axios.post(`${API_BASE_URL}/createPatient`, patient);
 };
 
-export const deleteCompetition = (competitionId) => {
-    return axios.delete(`${API_BASE_URL}/deleteCompetition?competitionId=${competitionId}`);
-};
-
-// Спортсмены
-export const fetchSportsmen = () => {
-    return axios.get(`${API_BASE_URL}/getSportsmen`);
-};
-
-export const fetchSportsman = (sportsmanId) => {
-    return axios.get(`${API_BASE_URL}/getSportsman?sportsmanId=${sportsmanId}`);
-}
-
-export const createSportsman = (sportsman) => {
-    return axios.post(`${API_BASE_URL}/createSportsman`, sportsman);
-};
-
-export const updateSportsman = (sportsman) => {
-    return axios.put(`${API_BASE_URL}/editSportsman`, sportsman, {
+export const updatePatient = (patient) => {
+    return axios.put(`${API_BASE_URL}/updatePatient`, patient, {
         headers: { 'Content-Type': 'application/json' }
     });
 };
 
-export const deleteSportsman = (sportsmanId) => {
-    return axios.delete(`${API_BASE_URL}/deleteSportsman?sportsmanId=${sportsmanId}`);
+export const deletePatient = (patientId) => {
+    return axios.delete(`${API_BASE_URL}/deletePatient?patientId=${patientId}`);
 };
 
-// Регистрация (ожидается JSON с competitionId и sportsmanId)
-export const registerSportsman = (competitionId, sportsmanId) => {
-    return axios.post(`${API_BASE_URL}/regInCompetition?competitionId=${competitionId}&sportsmanId=${sportsmanId}`);
+export const createVisit = (visitData) => {
+    return axios.post(`${API_BASE_URL}/visits`, visitData);
+};
+
+export const addSymptomsToVisit = (visitId, symptomIds) => {
+    return axios.post(`${API_BASE_URL}/visits/${visitId}/symptoms`, { symptomIds });
+};
+export const fetchSymptoms = () => {
+    return axios.get(`${API_BASE_URL}/getSymptoms`);
+};
+export const fetchInsuranceCompanies = () => {
+    return axios.get(`${API_BASE_URL}/getInsuranceCompanies`);
 };

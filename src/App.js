@@ -1,31 +1,35 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header';
-import CompetitionsPage from './pages/CompetitionsPage';
-import SportsmenPage from './pages/SportsmenPage';
-import RegistrationPage from './pages/RegistrationPage';
-import CompetitionForm from './pages/CompetitionForm';
-import SportsmanForm from './pages/SportsmanForm';
 import { BrowserRouter } from 'react-router-dom';
+import Header from './components/Header';
+import PatientPage from './pages/PatientPage';
+import PatientForm from './pages/PatientForm';
+import PatientVisitPage from './pages/PatientVisitPage'; // New import
+
 function App() {
   return (
-      <BrowserRouter>
-      <div>
+    <BrowserRouter>
+      <div className="medical-app">
         <Header />
         <div className="container">
           <Routes>
-            <Route path="/" element={<Navigate to="/competitions" />} />
-            <Route path="/competitions" element={<CompetitionsPage />} />
-            <Route path="/competitions/new" element={<CompetitionForm />} />
-            <Route path="/competitions/edit/:id" element={<CompetitionForm />} />
-            <Route path="/sportsmen" element={<SportsmenPage />} />
-            <Route path="/sportsmen/new" element={<SportsmanForm />} />
-            <Route path="/sportsmen/edit/:id" element={<SportsmanForm />} />
-            <Route path="/registration" element={<RegistrationPage />} />
+            <Route path="/" element={<Navigate to="/patients" />} />
+
+            {/* Patient Management Routes */}
+            <Route path="/patients" element={<PatientPage />} />
+            <Route path="/patients/new" element={<PatientForm />} />
+            <Route path="/patients/edit/:id" element={<PatientForm />} />
+
+            {/* Patient Visit Routes */}
+            <Route path="/Visits" element={<PatientVisitPage />} />
+
+            {/* Future Routes can be added here */}
+            {/* <Route path="/reports" element={<ReportsPage />} /> */}
+            {/* <Route path="/symptoms" element={<SymptomManagementPage />} /> */}
           </Routes>
         </div>
       </div>
-      </BrowserRouter>
+    </BrowserRouter>
   );
 }
 

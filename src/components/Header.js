@@ -5,10 +5,10 @@ const Header = () => {
     return (
         <header style={styles.header}>
             <nav style={styles.nav}>
-                <NavLink to="/competitions" style={styles.link}>Соревнования</NavLink>
-                <NavLink to="/sportsmen" style={styles.link}>Спортсмены</NavLink>
-                <NavLink to="/registration" style={styles.link}>
-                    Регистрация спортсмена на соревнования
+                <NavLink to="/Patients" style={styles.link}>Patients</NavLink>
+
+                <NavLink to="/Visits" style={styles.link}>
+                  Patient Cards
                 </NavLink>
             </nav>
         </header>
