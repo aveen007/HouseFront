@@ -1,121 +1,152 @@
 import React, { useState, useEffect } from 'react';
 import { createVisit, fetchSymptoms, fetchPatients, addSymptomsToVisit } from '../api';
+import {
+  Container,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Box,
+  Paper,
+  List,
+  ListItem,
+  Checkbox,
+  ListItemText,
+  CircularProgress
+} from '@mui/material';
 
 const PatientRegistrationPage = () => {
-    const [symptoms, setSymptoms] = useState([]);
-    const [patients, setPatients] = useState([]);
-    const [selectedPatient, setSelectedPatient] = useState('');
-    const [selectedSymptoms, setSelectedSymptoms] = useState([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [symptoms, setSymptoms] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [selectedPatient, setSelectedPatient] = useState('');
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        fetchSymptoms()
-            .then(response => {
-                setSymptoms(response.data);
-            })
-            .catch(error => console.error("Error fetching symptoms", error));
+  useEffect(() => {
+    fetchSymptoms()
+      .then(response => setSymptoms(response.data))
+      .catch(error => console.error("Error fetching symptoms", error));
 
-        fetchPatients()
-            .then(response => {
-                setPatients(response.data);
-            })
-            .catch(error => console.error("Error fetching patients", error));
-    }, []);
+    fetchPatients()
+      .then(response => setPatients(response.data))
+      .catch(error => console.error("Error fetching patients", error));
+  }, []);
 
-    const handleSymptomChange = (e) => {
-        const options = e.target.options;
-        const selected = [];
-        for (let i = 0; i < options.length; i++) {
-            if (options[i].selected) {
-                selected.push(parseInt(options[i].value));
-            }
-        }
-        setSelectedSymptoms(selected);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!selectedPatient || selectedSymptoms.length === 0) {
-            alert("Please select a patient and at least one symptom");
-            return;
-        }
-
-        setIsSubmitting(true);
-
-        try {
-            // Create the visit with current date
-            const today = new Date().toISOString().split('T')[0];
-            const visitResponse = await createVisit({
-                patient_id: selectedPatient,
-                date_of_visit: today
-            });
-
-            const visitId = visitResponse.data.visit_id;
-
-            // Add symptoms to the visit
-            await addSymptomsToVisit(visitId, selectedSymptoms);
-
-            alert("Visit created successfully with symptoms recorded!");
-
-            // Reset form
-            setSelectedPatient('');
-            setSelectedSymptoms([]);
-        } catch (error) {
-            console.error("Error during visit creation", error);
-            alert("Visit creation failed. Please try again.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <div className="patient-registration">
-            <h2> Patient Card</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="patient">Patient:</label>
-                    <select
-                        id="patient"
-                        value={selectedPatient}
-                        onChange={(e) => setSelectedPatient(e.target.value)}
-                        required
-                    >
-                        <option value="">Select Patient</option>
-                        {patients.map(patient => (
-                            <option key={patient.patient_id} value={patient.patient_id}>
-                                {patient.first_name} {patient.last_name} (ID: {patient.patient_id})
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="symptoms">Symptoms (Select multiple with Ctrl/Cmd):</label>
-                    <select
-                        id="symptoms"
-                        multiple
-                        size="5"
-                        value={selectedSymptoms}
-                        onChange={handleSymptomChange}
-                        required
-                        style={{ minHeight: '100px' }}
-                    >
-                        {symptoms.map(symptom => (
-                            <option key={symptom.symptom_id} value={symptom.symptom_id}>
-                                {symptom.name} ({symptom.code})
-                            </option>
-                        ))}
-                    </select>
-
-                </div>
-
-                <button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Processing...' : 'Create Patient Card'}
-                </button>
-            </form>
-        </div>
+  const handleSymptomToggle = (symptomId) => {
+    setSelectedSymptoms(prev =>
+      prev.includes(symptomId)
+        ? prev.filter(id => id !== symptomId)
+        : [...prev, symptomId]
     );
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!selectedPatient || selectedSymptoms.length === 0) {
+      alert("Please select a patient and at least one symptom");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const visitResponse = await createVisit({
+        patient_id: selectedPatient,
+        date_of_visit: today
+      });
+
+      await addSymptomsToVisit(visitResponse.data.visit_id, selectedSymptoms);
+      alert("Visit created successfully!");
+
+      setSelectedPatient('');
+      setSelectedSymptoms([]);
+    } catch (error) {
+      console.error("Error during visit creation", error);
+      alert("Visit creation failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+        <Typography variant="h4" component="h1" align="center" gutterBottom>
+          Patient Visit Registration
+        </Typography>
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          {/* Patient Selection */}
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <InputLabel>Select Patient</InputLabel>
+            <Select
+              value={selectedPatient}
+              onChange={(e) => setSelectedPatient(e.target.value)}
+              label="Select Patient"
+              sx={{ height: '56px' }}
+            >
+              {patients.map(patient => (
+                <MenuItem key={patient.patient_id} value={patient.patient_id}>
+                  {patient.first_name} {patient.last_name} (ID: {patient.patient_id})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Symptoms Selection */}
+          <Typography variant="h6" gutterBottom>
+            Select Symptoms:
+          </Typography>
+          <List sx={{
+            border: '1px solid rgba(0, 0, 0, 0.23)',
+            borderRadius: '4px',
+            maxHeight: '400px',
+            overflow: 'auto',
+            mb: 3
+          }}>
+            {symptoms.map(symptom => (
+              <ListItem
+                key={symptom.symptom_id}
+                button
+                onClick={() => handleSymptomToggle(symptom.symptom_id)}
+                sx={{
+                  py: 2,
+                  '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
+                }}
+              >
+                <Checkbox
+                  edge="start"
+                  checked={selectedSymptoms.includes(symptom.symptom_id)}
+                  tabIndex={-1}
+                  disableRipple
+                />
+                <ListItemText
+                  primary={`${symptom.name} (${symptom.code})`}
+                  primaryTypographyProps={{ style: { fontSize: '1.1rem' } }}
+                />
+              </ListItem>
+            ))}
+          </List>
+
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            disabled={isSubmitting}
+            sx={{ py: 2, fontSize: '1.1rem' }}
+          >
+            {isSubmitting ? <CircularProgress size={24} /> : 'Create Patient Card'}
+          </Button>
+        </Box>
+      </Paper>
+    </Container>
+  );
 };
 
 export default PatientRegistrationPage;

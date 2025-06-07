@@ -2,147 +2,198 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createPatient, updatePatient } from '../api';
 import axios from 'axios';
+import {
+  Container,
+  Typography,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Button,
+  Box,
+  Paper,
+  Grid
+} from '@mui/material';
 
 const PatientForm = () => {
-    const [patient, setPatient] = useState({
-        first_name: '',
-        last_name: '',
-        date_of_birth: '',
-        gender: '',
-        insurance_company_id: 0,
-        age: 0
-    });
-    const [insuranceCompanies, setInsuranceCompanies] = useState([]);
-    const navigate = useNavigate();
-    const { id } = useParams();
+  const [patient, setPatient] = useState({
+    first_name: '',
+    last_name: '',
+    date_of_birth: '',
+    gender: '',
+    insurance_company_id: ''
+  });
 
-    useEffect(() => {
-        // Fetch insurance companies
-        axios.get('http://localhost:8080/api/insuranceCompanies')
-            .then(response => {
-                setInsuranceCompanies(response.data);
-            })
-            .catch(error => console.error("Error fetching insurance companies", error));
+  const [insuranceCompanies, setInsuranceCompanies] = useState([]);
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-        if (id) {
-            // Fetch patient data for editing
-            axios.get(`http://localhost:8080/api/getPatient?patient_id=${id}`)
-                .then(response => {
-                    setPatient(response.data);
-                })
-                .catch(error => console.error("Error fetching patient", error));
-        }
-    }, [id]);
+  useEffect(() => {
+    // Fetch insurance companies
+    axios.get('http://localhost:8080/api/insuranceCompanies')
+      .then(response => {
+        setInsuranceCompanies(response.data);
+      })
+      .catch(error => console.error("Error fetching insurance companies", error));
 
-    const handleChange = (e) => {
-        setPatient({
-            ...patient,
-            [e.target.name]: e.target.value
-        });
-    };
+    if (id) {
+      // Fetch patient data for editing
+      axios.get(`http://localhost:8080/api/getPatient?patient_id=${id}`)
+        .then(response => {
+          setPatient(response.data);
+        })
+        .catch(error => console.error("Error fetching patient", error));
+    }
+  }, [id]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (id) {
-            updatePatient(patient)
-                .then(() => {
-                    navigate('/patients');
-                })
-                .catch(error => console.error("Error updating patient", error));
-        } else {
-            createPatient(patient)
-                .then(() => {
-                    navigate('/patients');
-                })
-                .catch(error => console.error("Error creating patient", error));
-        }
-    };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setPatient(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    return (
-        <div>
-            <h2>{id ? 'Edit Patient' : 'Register New Patient'}</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="first_name">First Name:</label>
-                    <input
-                        id="first_name"
-                        type="text"
-                        name="first_name"
-                        value={patient.first_name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="last_name">Last Name:</label>
-                    <input
-                        id="last_name"
-                        type="text"
-                        name="last_name"
-                        value={patient.last_name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="date_of_birth">Date of Birth:</label>
-                    <input
-                        id="date_of_birth"
-                        type="date"
-                        name="date_of_birth"
-                        value={patient.date_of_birth}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="gender">Gender:</label>
-                    <select
-                        id="gender"
-                        name="gender"
-                        value={patient.gender}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Select Gender</option>
-                        <option value="M">Male</option>
-                        <option value="F">Female</option>
-                        <option value="O">Other</option>
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="insurance_company_id">Insurance Company:</label>
-                    <select
-                        id="insurance_company_id"
-                        name="insurance_company_id"
-                        value={patient.insurance_company_id}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Select Insurance Company</option>
-                        {insuranceCompanies.map(company => (
-                            <option key={company.insurance_company_id} value={company.insurance_company_id}>
-                                {company.company_name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="age">Age:</label>
-                    <input
-                        id="age"
-                        type="number"
-                        name="age"
-                        value={patient.age}
-                        onChange={handleChange}
-                        required
-                        min="0"
-                    />
-                </div>
-                <button type="submit">{id ? 'Save Changes' : 'Register Patient'}</button>
-            </form>
-        </div>
-    );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (id) {
+      updatePatient(patient)
+        .then(() => {
+          navigate('/patients');
+        })
+        .catch(error => console.error("Error updating patient", error));
+    } else {
+      createPatient(patient)
+        .then(() => {
+          navigate('/patients');
+        })
+        .catch(error => console.error("Error creating patient", error));
+    }
+  };
+
+  return (
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
+          {id ? 'Edit Patient' : 'Register New Patient'}
+        </Typography>
+
+        <Box component="form" onSubmit={handleSubmit}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="First Name"
+                name="first_name"
+                value={patient.first_name}
+                onChange={handleChange}
+                required
+                variant="outlined"
+                sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                name="last_name"
+                value={patient.last_name}
+                onChange={handleChange}
+                required
+                variant="outlined"
+                sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Date of Birth"
+                type="date"
+                name="date_of_birth"
+                value={patient.date_of_birth}
+                onChange={handleChange}
+                required
+                variant="outlined"
+                InputLabelProps={{ shrink: true }}
+                sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required variant="outlined" sx={{ '& .MuiInputBase-root': { height: '56px' } }}>
+                <InputLabel>Gender</InputLabel>
+                <Select
+                  name="gender"
+                  value={patient.gender}
+                  onChange={handleChange}
+                  label="Gender"
+                >
+                  <MenuItem value=""><em>Select Gender</em></MenuItem>
+                  <MenuItem value="M">Male</MenuItem>
+                  <MenuItem value="F">Female</MenuItem>
+                  <MenuItem value="O">Other</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <FormControl fullWidth required variant="outlined" sx={{ '& .MuiInputBase-root': { height: '56px' } }}>
+                <InputLabel>Insurance Company</InputLabel>
+                <Select
+                  name="insurance_company_id"
+                  value={patient.insurance_company_id}
+                  onChange={handleChange}
+                  label="Insurance Company"
+                >
+                  <MenuItem value=""><em>Select Insurance Company</em></MenuItem>
+                  {insuranceCompanies.map(company => (
+                    <MenuItem key={company.insurance_company_id} value={company.insurance_company_id}>
+                      {company.company_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  fullWidth
+                  sx={{
+                    py: 2,
+                    fontSize: '1.1rem',
+                    height: '56px'
+                  }}
+                >
+                  {id ? 'Save Changes' : 'Register Patient'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate('/patients')}
+                  size="large"
+                  fullWidth
+                  sx={{
+                    py: 2,
+                    fontSize: '1.1rem',
+                    height: '56px'
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Paper>
+    </Container>
+  );
 };
 
 export default PatientForm;
