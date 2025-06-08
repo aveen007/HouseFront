@@ -55,8 +55,8 @@ const PatientRegistrationPage = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       const visitResponse = await createVisit({
-        patient_id: selectedPatient,
-        date_of_visit: today
+        patientId: selectedPatient,
+        dateOfVisit: today
       });
 
       await addSymptomsToVisit(visitResponse.data.visit_id, selectedSymptoms);
@@ -90,8 +90,8 @@ const PatientRegistrationPage = () => {
               sx={{ height: '56px' }}
             >
               {patients.map(patient => (
-                <MenuItem key={patient.patient_id} value={patient.patient_id}>
-                  {patient.first_name} {patient.last_name} (ID: {patient.patient_id})
+                <MenuItem key={patient.id} value={patient.id}>
+                  {patient.firstName} {patient.lastName}
                 </MenuItem>
               ))}
             </Select>
@@ -110,9 +110,9 @@ const PatientRegistrationPage = () => {
           }}>
             {symptoms.map(symptom => (
               <ListItem
-                key={symptom.symptom_id}
+                key={symptom.id}
                 button
-                onClick={() => handleSymptomToggle(symptom.symptom_id)}
+                onClick={() => handleSymptomToggle(symptom.id)}
                 sx={{
                   py: 2,
                   '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
@@ -120,12 +120,12 @@ const PatientRegistrationPage = () => {
               >
                 <Checkbox
                   edge="start"
-                  checked={selectedSymptoms.includes(symptom.symptom_id)}
+                  checked={selectedSymptoms.includes(symptom.id)}
                   tabIndex={-1}
                   disableRipple
                 />
                 <ListItemText
-                  primary={`${symptom.name} (${symptom.code})`}
+                  primary={`${symptom.symptomName} `}
                   primaryTypographyProps={{ style: { fontSize: '1.1rem' } }}
                 />
               </ListItem>

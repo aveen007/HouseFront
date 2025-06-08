@@ -9,7 +9,8 @@ const Header = () => {
 
                 <NavLink to="/Visits" style={styles.link}>
                   Patient Cards
-                </NavLink>
+               </NavLink>
+
             </nav>
         </header>
     );

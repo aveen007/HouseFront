@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createPatient, updatePatient } from '../api';
+import { createPatient ,updatePatient } from '../api';
 import axios from 'axios';
 import {
   Container,
@@ -15,6 +15,13 @@ import {
   Paper,
   Grid
 } from '@mui/material';
+const transformToBackendFormat = (data) => ({
+  firstName: data.first_name,
+  lastName: data.last_name,
+  dateOfBirth: data.date_of_birth,
+  gender: data.gender,
+  insuranceCompanyId: data.insurance_company_id
+});
 
 const PatientForm = () => {
   const [patient, setPatient] = useState({
@@ -31,7 +38,7 @@ const PatientForm = () => {
 
   useEffect(() => {
     // Fetch insurance companies
-    axios.get('http://localhost:8080/api/insuranceCompanies')
+    axios.get('http://localhost:8080/api/getInsuranceCompanies')
       .then(response => {
         setInsuranceCompanies(response.data);
       })
@@ -64,14 +71,16 @@ const PatientForm = () => {
         })
         .catch(error => console.error("Error updating patient", error));
     } else {
-      createPatient(patient)
+       const transformedData = transformToBackendFormat(patient);
+       console.log(transformedData);
+      createPatient(transformedData)
         .then(() => {
           navigate('/patients');
         })
         .catch(error => console.error("Error creating patient", error));
     }
   };
-
+console.log(patient);
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
@@ -150,8 +159,8 @@ const PatientForm = () => {
                 >
                   <MenuItem value=""><em>Select Insurance Company</em></MenuItem>
                   {insuranceCompanies.map(company => (
-                    <MenuItem key={company.insurance_company_id} value={company.insurance_company_id}>
-                      {company.company_name}
+                    <MenuItem key={company.id} value={company.id}>
+                      {company.companyName}
                     </MenuItem>
                   ))}
                 </Select>
@@ -195,5 +204,6 @@ const PatientForm = () => {
     </Container>
   );
 };
+
 
 export default PatientForm;

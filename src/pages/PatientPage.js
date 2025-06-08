@@ -66,8 +66,11 @@ const PatientsPage = () => {
   };
 
   const getCompanyName = (companyId) => {
-    const company = insuranceCompanies.find(c => c.insurance_company_id === companyId);
-    return company ? company.company_name : 'Unknown';
+   console.log(insuranceCompanies);
+   console.log(companyId);
+
+    const company = insuranceCompanies.find(c => c.id === companyId.id);
+    return company ? company.companyName : 'Unknown';
   };
 
   const formatDate = (dateString) => {
@@ -106,22 +109,22 @@ const PatientsPage = () => {
           <TableBody>
             {patients.map((patient) => (
               <TableRow
-                key={patient.patient_id}
+                key={patient.id}
                 hover
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                <TableCell>{patient.first_name}</TableCell>
-                <TableCell>{patient.last_name}</TableCell>
-                <TableCell>{formatDate(patient.date_of_birth)}</TableCell>
+                <TableCell>{patient.firstName}</TableCell>
+                <TableCell>{patient.lastName}</TableCell>
+                <TableCell>{formatDate(patient.dateOfBirth)}</TableCell>
                 <TableCell>
                   {patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : 'Other'}
                 </TableCell>
-                <TableCell>{getCompanyName(patient.insurance_company_id)}</TableCell>
+                <TableCell>{getCompanyName(patient.insuranceCompany)}</TableCell>
                 <TableCell align="center">
                   <IconButton
                     color="primary"
                     aria-label="edit"
-                    onClick={() => navigate(`/patients/edit/${patient.patient_id}`)}
+                    onClick={() => navigate(`/patients/edit/${patient.id}`)}
                   >
                     <EditIcon />
                   </IconButton>
@@ -151,7 +154,7 @@ const PatientsPage = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete {patientToDelete?.first_name} {patientToDelete?.last_name}'s record?
+            Are you sure you want to delete {patientToDelete?.firstName} {patientToDelete?.lastName}'s record?
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -5,6 +5,7 @@ import Header from './components/Header';
 import PatientPage from './pages/PatientPage';
 import PatientForm from './pages/PatientForm';
 import PatientVisitPage from './pages/PatientVisitPage'; // New import
+import PatientCards from './pages/PatientCards'; // New import
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
 
             {/* Patient Visit Routes */}
             <Route path="/Visits" element={<PatientVisitPage />} />
+          //  <Route path="/Bets" element={<PatientCards />} />
 
             {/* Future Routes can be added here */}
             {/* <Route path="/reports" element={<ReportsPage />} /> */}
