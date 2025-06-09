@@ -10,7 +10,12 @@ const Header = () => {
                 <NavLink to="/Visits" style={styles.link}>
                   Patient Cards
                </NavLink>
-
+              <NavLink to="/Bets" style={styles.link}>
+                 Bets
+               </NavLink>
+               <NavLink to="/FinalizeBets" style={styles.link}>
+                                FinalizeBets
+                              </NavLink>
             </nav>
         </header>
     );

@@ -15,7 +15,7 @@ import {
   Box
 } from '@mui/material';
 
-const PatientsPage = () => {
+const FinalizeBetList = () => {
   const [patients, setPatients] = useState([]);
   const navigate = useNavigate();
 
@@ -25,17 +25,15 @@ const PatientsPage = () => {
       .catch(error => console.error("Error fetching patients", error));
   }, []);
 
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
-  const handleViewPatient = (patientId) => {
-    navigate(`/patients/${patientId}`);
+  const handleFinalizeBet = (patientId) => {
+    navigate(`/patients/${patientId}/FinalizeBets`);
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
+        Finalize Bets
+      </Typography>
       <TableContainer component={Paper} elevation={3}>
         <Table sx={{ minWidth: 650 }} aria-label="patient table">
           <TableHead sx={{ bgcolor: 'primary.main' }}>
@@ -48,7 +46,7 @@ const PatientsPage = () => {
           <TableBody>
             {patients.map((patient) => (
               <TableRow
-                key={patient.patient_id}
+                key={patient.id}
                 hover
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
@@ -57,10 +55,11 @@ const PatientsPage = () => {
                 <TableCell>
                   <Button
                     variant="contained"
-                    color="primary"
-                    onClick={() => handleViewPatient(patient.id)}
+                    color="secondary"
+                    onClick={() => handleFinalizeBet(patient.id)}
+                    sx={{ backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
                   >
-                    Go to Bets
+                    Finalize Bet
                   </Button>
                 </TableCell>
               </TableRow>
@@ -72,4 +71,4 @@ const PatientsPage = () => {
   );
 };
 
-export default PatientsPage;
+export default FinalizeBetList;

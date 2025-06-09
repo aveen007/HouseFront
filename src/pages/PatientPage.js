@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchPatients, deletePatient, fetchInsuranceCompanies } from '../api';
+import { fetchPatients, fetchInsuranceCompanies } from '../api';
 import {
   Container,
   Typography,
@@ -12,21 +12,12 @@ import {
   TableHead,
   TableRow,
   Paper,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   Box
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
 const PatientsPage = () => {
   const [patients, setPatients] = useState([]);
   const [insuranceCompanies, setInsuranceCompanies] = useState([]);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [patientToDelete, setPatientToDelete] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,30 +31,7 @@ const PatientsPage = () => {
       .catch(error => console.error("Error fetching companies", error));
   }, []);
 
-  const handleDeleteClick = (patient) => {
-    setPatientToDelete(patient);
-    setOpenDeleteDialog(true);
-  };
 
-  const handleDeleteConfirm = () => {
-    deletePatient(patientToDelete.patient_id)
-      .then(() => {
-        setPatients(patients.filter(p => p.patient_id !== patientToDelete.patient_id));
-      })
-      .catch(error => {
-        console.error("Error deleting patient", error);
-        alert("Failed to delete patient. They may have associated medical records.");
-      })
-      .finally(() => {
-        setOpenDeleteDialog(false);
-        setPatientToDelete(null);
-      });
-  };
-
-  const handleDeleteCancel = () => {
-    setOpenDeleteDialog(false);
-    setPatientToDelete(null);
-  };
 
   const getCompanyName = (companyId) => {
    console.log(insuranceCompanies);
@@ -103,7 +71,6 @@ const PatientsPage = () => {
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Date of Birth</TableCell>
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Gender</TableCell>
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Insurance Company</TableCell>
-              <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }} align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -120,50 +87,15 @@ const PatientsPage = () => {
                   {patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : 'Other'}
                 </TableCell>
                 <TableCell>{getCompanyName(patient.insuranceCompany)}</TableCell>
-                <TableCell align="center">
-                  <IconButton
-                    color="primary"
-                    aria-label="edit"
-                    onClick={() => navigate(`/patients/edit/${patient.id}`)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    aria-label="delete"
-                    onClick={() => handleDeleteClick(patient)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={openDeleteDialog}
-        onClose={handleDeleteCancel}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          Confirm Delete
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete {patientToDelete?.firstName} {patientToDelete?.lastName}'s record?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteCancel}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+
     </Container>
   );
 };
