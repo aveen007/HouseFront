@@ -13,7 +13,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Radio
+  Radio,
+  CircularProgress
 } from '@mui/material';
 
 const FinalizeBetPage = () => {
@@ -21,18 +22,44 @@ const FinalizeBetPage = () => {
   const navigate = useNavigate();
   const [patient, setPatient] = useState(null);
   const [bets, setBets] = useState([]);
-  const [selectedBetId, setSelectedBetId] = useState(null);
+  const [selectedBetId, setSelectedBetId] = useState(null); // Track selected ID only
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [visitId, setVisitId] = useState(null);
 
   useEffect(() => {
-    // Fetch patient data
-    axios.get(`http://localhost:8080/api/getPatient?patientId=${id}`)
-      .then(response => setPatient(response.data))
-      .catch(error => console.error("Error fetching patient", error));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setSelectedBetId(null); // Reset selection when data reloads
 
-    // Fetch bets for this patient (assuming you have an endpoint that gets bets by patient ID)
-    axios.get(`http://localhost:8080/api/getBetsByPatientId?patientId=${id}`)
-      .then(response => setBets(response.data))
-      .catch(error => console.error("Error fetching bets", error));
+        // Step 1: Fetch patient data
+        const patientResponse = await axios.get(`http://localhost:8080/api/getPatient?patientId=${id}`);
+        setPatient(patientResponse.data);
+
+        // Step 2: Get all bet patients to find this patient's visitId
+        const betPatientsResponse = await axios.get('http://localhost:8080/api/getBetPatients');
+        const betPatient = betPatientsResponse.data.find(p => p.id === parseInt(id));
+
+        if (!betPatient) {
+          throw new Error('Patient not found in bet patients list');
+        }
+
+        setVisitId(betPatient.visitId);
+
+        // Step 3: Get bets for this visit
+        const betsResponse = await axios.get(`http://localhost:8080/api/getVisitBets?visitId=${betPatient.visitId}`);
+        setBets(betsResponse.data);
+        console.log(betsResponse.data);
+      } catch (err) {
+        console.error("Error fetching data", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [id]);
 
   const handleFinalizeBet = () => {
@@ -41,12 +68,50 @@ const FinalizeBetPage = () => {
       return;
     }
 
-    axios.post(`http://localhost:8080/api/finalizeBet`, { betId: selectedBetId })
+    const selectedBet = bets.find(bet => bet.betId === selectedBetId);
+    if (!selectedBet) {
+      alert("Invalid bet selection");
+      return;
+    }
+
+    const finalizeData = {
+      betId: selectedBetId,
+      visitId: visitId,
+      diagnosis: selectedBet.diagnosis,
+      amount: selectedBet.amount
+    };
+
+    axios.post(`http://localhost:8080/api/finalizeBet`, finalizeData)
       .then(() => {
         navigate(`/patients/${id}`);
       })
-      .catch(error => console.error("Error finalizing bet", error));
+      .catch(error => {
+        console.error("Error finalizing bet", error);
+        alert("Failed to finalize bet: " + error.message);
+      });
   };
+
+  const handleSelectBet = (betId) => {
+   console.log(betId);
+    setSelectedBetId(betId);
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+        <Typography color="error">{error}</Typography>
+        <Button onClick={() => navigate(`/patients/${id}`)}>Back to Patient</Button>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
@@ -59,31 +124,39 @@ const FinalizeBetPage = () => {
         </Box>
 
         {/* Bets Table */}
-        <TableContainer component={Paper} sx={{ mb: 4 }}>
-          <Table>
-            <TableHead sx={{ bgcolor: 'primary.main' }}>
-              <TableRow>
-                <TableCell sx={{ color: 'common.white' }}>Select</TableCell>
-                <TableCell sx={{ color: 'common.white' }}>Diagnosis</TableCell>
-                <TableCell sx={{ color: 'common.white' }}>Bid Amount</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {bets.map((bet) => (
-                <TableRow key={bet.id}>
-                  <TableCell>
-                    <Radio
-                      checked={selectedBetId === bet.id}
-                      onChange={() => setSelectedBetId(bet.id)}
-                    />
-                  </TableCell>
-                  <TableCell>{bet.diagnosis}</TableCell>
-                  <TableCell>${bet.bidAmount}</TableCell>
+        {bets.length === 0 ? (
+          <Typography variant="h6" sx={{ mb: 4 }}>
+            No bets found for this patient's visit
+          </Typography>
+        ) : (
+          <TableContainer component={Paper} sx={{ mb: 4 }}>
+            <Table>
+              <TableHead sx={{ bgcolor: 'primary.main' }}>
+                <TableRow>
+                  <TableCell sx={{ color: 'common.white' }}>Select</TableCell>
+                  <TableCell sx={{ color: 'common.white' }}>Diagnosis</TableCell>
+                  <TableCell sx={{ color: 'common.white' }}>Bid Amount</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {bets.map((bet) => (
+                  <TableRow key={bet.betId}>
+                    <TableCell>
+                      <Radio
+                        checked={selectedBetId === bet.betId}
+                        onChange={() => handleSelectBet(bet.betId)}
+                        value={bet.betId}
+                        name="bet-selection"
+                      />
+                    </TableCell>
+                    <TableCell>{bet.diagnosis}</TableCell>
+                    <TableCell>${bet.amount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
@@ -94,15 +167,17 @@ const FinalizeBetPage = () => {
           >
             Cancel
           </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            onClick={handleFinalizeBet}
-            sx={{ backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
-          >
-            Finalize Selected Bet
-          </Button>
+          {bets.length > 0 && (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              onClick={handleFinalizeBet}
+              sx={{ backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
+            >
+              Finalize Selected Bet
+            </Button>
+          )}
         </Box>
       </Paper>
     </Container>

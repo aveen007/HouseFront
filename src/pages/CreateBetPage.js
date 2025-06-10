@@ -19,15 +19,29 @@ const CreateBetPage = () => {
     diagnosis: '',
     bidAmount: ''
   });
+  const [visitId, setVisitId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Fetch patient data
     if (id) {
+      setLoading(true);
       axios.get(`http://localhost:8080/api/getPatient?patientId=${id}`)
         .then(response => {
           setPatient(response.data);
         })
         .catch(error => console.error("Error fetching patient", error));
+
+      // Fetch visit ID for this patient
+      axios.get('http://localhost:8080/api/getVisitPatients')
+        .then(response => {
+          const patientVisit = response.data.find(p => p.id === parseInt(id));
+          if (patientVisit) {
+            setVisitId(patientVisit.visitId);
+          }
+        })
+        .catch(error => console.error("Error fetching visit ID", error))
+        .finally(() => setLoading(false));
     }
   }, [id]);
 
@@ -41,11 +55,12 @@ const CreateBetPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     // Prepare the bet data to send to your API
     const betToCreate = {
-      patientId: id,
+      visitId: visitId,
       diagnosis: betData.diagnosis,
-      bidAmount: parseFloat(betData.bidAmount),
+      amount: parseFloat(betData.bidAmount),
       // You might want to add more fields like date, status, etc.
     };
 
