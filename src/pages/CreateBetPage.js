@@ -68,7 +68,7 @@ const CreateBetPage = () => {
     axios.post('http://localhost:8080/api/createBet', betToCreate)
       .then(response => {
         // After successful creation, navigate back to patient card
-        navigate(`/patients/${id}`);
+        navigate(`/FinalizeBets?notification=true&patient=${encodeURIComponent(patient.firstName + ' ' + patient.lastName)}&diagnosis=${encodeURIComponent(betData.diagnosis)}&amount=${betData.bidAmount}`,{replace: false });
       })
       .catch(error => {
         console.error("Error creating bet", error);

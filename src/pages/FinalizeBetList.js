@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   Container,
@@ -13,27 +13,39 @@ import {
   TableRow,
   Paper,
   Box,
-  CircularProgress
+  CircularProgress,
+  Snackbar,
+  Alert
 } from '@mui/material';
 
 const FinalizeBetList = () => {
   const [patientsWithBets, setPatientsWithBets] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('notification') === 'true') {
+      setNotification({
+        patientName: searchParams.get('patient'),
+        diagnosis: searchParams.get('diagnosis'),
+        amount: searchParams.get('amount')
+      });
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+
     const fetchData = async () => {
       try {
-        // First fetch all patients
         const patientsResponse = await axios.get('http://localhost:8080/api/getBetPatients');
         const allPatients = patientsResponse.data;
-        console.log(allPatients);
-        // For each patient, check if they have bets
+
         const patientsWithBetsData = await Promise.all(
           allPatients.map(async (patient) => {
             try {
               const betsResponse = await axios.get(`http://localhost:8080/api/getVisitBets?visitId=${patient.visitId}`);
-              // Only include patient if bets exist and the array is not empty
               if (betsResponse.data && betsResponse.data.length > 0) {
                 return { ...patient, hasBets: true };
               }
@@ -45,7 +57,6 @@ const FinalizeBetList = () => {
           })
         );
 
-        // Filter out null values (patients without bets)
         const filteredPatients = patientsWithBetsData.filter(patient => patient !== null);
         setPatientsWithBets(filteredPatients);
       } catch (error) {
@@ -56,7 +67,11 @@ const FinalizeBetList = () => {
     };
 
     fetchData();
-  }, []);
+  }, [location.search]);
+
+  const handleCloseNotification = () => {
+    setNotification(null);
+  };
 
   const handleFinalizeBet = (patientId) => {
     navigate(`/patients/${patientId}/FinalizeBets`);
@@ -75,6 +90,19 @@ const FinalizeBetList = () => {
       <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
         Finalize Bets
       </Typography>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={!!notification}
+        autoHideDuration={6000}
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseNotification} severity="success" sx={{ width: '100%' }}>
+          Bet placed successfully for {notification?.patientName} on {notification?.diagnosis} with amount ${notification?.amount}
+        </Alert>
+      </Snackbar>
+
       {patientsWithBets.length === 0 ? (
         <Typography variant="h6" component="div" sx={{ mt: 2 }}>
           No patients with active bets found.
