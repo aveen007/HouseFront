@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchPatients } from '../api';
+import axios from 'axios';
 import {
   Container,
   Typography,
@@ -20,11 +21,11 @@ const PatientsPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchPatients()
-      .then(response => setPatients(response.data))
-      .catch(error => console.error("Error fetching patients", error));
-  }, []);
 
+   axios.get('http://localhost:8080/api/getVisitPatients')
+       .then(response => setPatients(response.data))
+             .catch(error => console.error("Error fetching patients", error));
+         }, []);
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);

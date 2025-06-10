@@ -58,8 +58,8 @@ const PatientRegistrationPage = () => {
         patientId: selectedPatient,
         dateOfVisit: today
       });
-
-      await addSymptomsToVisit(visitResponse.data.visit_id, selectedSymptoms);
+      console.log(visitResponse.data);
+      await addSymptomsToVisit(visitResponse.data.id, selectedSymptoms);
       alert("Visit created successfully!");
 
       setSelectedPatient('');
