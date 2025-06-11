@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createPatient ,updatePatient } from '../api';
+import MuiAlert from '@mui/material/Alert';
 import axios from 'axios';
 import {
   Container,
@@ -13,6 +14,8 @@ import {
   Button,
   Box,
   Paper,
+   Snackbar,
+    Alert,
   Grid
 } from '@mui/material';
 const transformToBackendFormat = (data) => ({
@@ -35,7 +38,11 @@ const PatientForm = () => {
   const [insuranceCompanies, setInsuranceCompanies] = useState([]);
   const navigate = useNavigate();
   const { id } = useParams();
-
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const Alert = React.forwardRef(function Alert(props, ref) {
+      return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+    });
   useEffect(() => {
     // Fetch insurance companies
     axios.get('http://localhost:8080/api/getInsuranceCompanies')
@@ -53,6 +60,9 @@ const PatientForm = () => {
         .catch(error => console.error("Error fetching patient", error));
     }
   }, [id]);
+    const handleSnackbarClose = () => {
+      setSnackbarOpen(false);
+    };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,7 +87,11 @@ const PatientForm = () => {
         .then(() => {
           navigate('/patients');
         })
-        .catch(error => console.error("Error creating patient", error));
+        .catch(error => {const errorMsg = error?.response?.data || "An error occurred while creating the patient.";
+                            setSnackbarMessage(errorMsg);
+                            setSnackbarOpen(true);
+                            console.log("xi");
+                            console.error("Error creating patient", error);})
     }
   };
 console.log(patient);
@@ -201,6 +215,12 @@ console.log(patient);
           </Grid>
         </Box>
       </Paper>
+       {/* Error Snackbar */}
+           <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+             <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+               {snackbarMessage}
+             </Alert>
+           </Snackbar>
     </Container>
   );
 };

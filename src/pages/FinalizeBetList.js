@@ -99,7 +99,7 @@ const FinalizeBetList = () => {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert onClose={handleCloseNotification} severity="success" sx={{ width: '100%' }}>
-          Bet placed successfully for {notification?.patientName} on {notification?.diagnosis} with amount ${notification?.amount}
+         A new bet was placed for {notification?.patientName} on {notification?.diagnosis} with amount ${notification?.amount}
         </Alert>
       </Snackbar>
 
