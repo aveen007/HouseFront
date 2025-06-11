@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNotifications } from './NotificationContext';
 import {
   Container,
   Typography,
@@ -52,7 +53,7 @@ const CreateBetPage = () => {
       [name]: value
     }));
   };
-
+  const { addPendingBet } = useNotifications();
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -68,7 +69,9 @@ const CreateBetPage = () => {
     axios.post('http://localhost:8080/api/createBet', betToCreate)
       .then(response => {
         // After successful creation, navigate back to patient card
-        navigate(`/FinalizeBets?notification=true&patient=${encodeURIComponent(patient.firstName + ' ' + patient.lastName)}&diagnosis=${encodeURIComponent(betData.diagnosis)}&amount=${betData.bidAmount}`,{replace: false });
+        navigate(`/patients/${id}`);
+//        navigate(`/FinalizeBets?notification=true&patient=${encodeURIComponent(patient.firstName + ' ' + patient.lastName)}&diagnosis=${encodeURIComponent(betData.diagnosis)}&amount=${betData.bidAmount}`,{replace: false });
+        addPendingBet(betToCreate);
       })
       .catch(error => {
         console.error("Error creating bet", error);

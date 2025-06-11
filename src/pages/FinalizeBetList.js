@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { useNotifications } from './NotificationContext';
 import {
   Container,
   Typography,
@@ -12,7 +13,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Box,
   CircularProgress,
   Snackbar,
   Alert
@@ -24,19 +24,34 @@ const FinalizeBetList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [notification, setNotification] = useState(null);
+  const { pendingBets, clearPendingBets } = useNotifications();
 
+  // Handle both pending bets notifications and URL-based notifications
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get('notification') === 'true') {
+
+    // Priority to pending bets notifications if they exist
+    if (pendingBets.length > 0) {
       setNotification({
-        patientName: searchParams.get('patient'),
-        diagnosis: searchParams.get('diagnosis'),
-        amount: searchParams.get('amount')
+        message: `${pendingBets.length} new bet(s) created since your last visit`,
+        severity: 'info'
       });
+      clearPendingBets();
+    }
+    // If no pending bets, check for URL notification
+    else if (searchParams.get('notification') === 'true') {
+      setNotification({
+        message: `New bet placed for ${searchParams.get('patient')} on ${searchParams.get('diagnosis')} ($${searchParams.get('amount')})`,
+        severity: 'success'
+      });
+      // Clean the URL
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
     }
+  }, [pendingBets.length, location.search, clearPendingBets]);
 
+  // Fetch data
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const patientsResponse = await axios.get('http://localhost:8080/api/getBetPatients');
@@ -45,7 +60,9 @@ const FinalizeBetList = () => {
         const patientsWithBetsData = await Promise.all(
           allPatients.map(async (patient) => {
             try {
-              const betsResponse = await axios.get(`http://localhost:8080/api/getVisitBets?visitId=${patient.visitId}`);
+              const betsResponse = await axios.get(
+                `http://localhost:8080/api/getVisitBets?visitId=${patient.visitId}`
+              );
               if (betsResponse.data && betsResponse.data.length > 0) {
                 return { ...patient, hasBets: true };
               }
@@ -61,13 +78,17 @@ const FinalizeBetList = () => {
         setPatientsWithBets(filteredPatients);
       } catch (error) {
         console.error("Error fetching patients", error);
+        setNotification({
+          message: 'Failed to load patient data',
+          severity: 'error'
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [location.search]);
+  }, []);
 
   const handleCloseNotification = () => {
     setNotification(null);
@@ -91,15 +112,19 @@ const FinalizeBetList = () => {
         Finalize Bets
       </Typography>
 
-      {/* Notification Snackbar */}
+      {/* Unified Notification Snackbar */}
       <Snackbar
         open={!!notification}
         autoHideDuration={6000}
         onClose={handleCloseNotification}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseNotification} severity="success" sx={{ width: '100%' }}>
-         A new bet was placed for {notification?.patientName} on {notification?.diagnosis} with amount ${notification?.amount}
+        <Alert
+          onClose={handleCloseNotification}
+          severity={notification?.severity || 'info'}
+          sx={{ width: '100%' }}
+        >
+          {notification?.message}
         </Alert>
       </Snackbar>
 
@@ -131,7 +156,10 @@ const FinalizeBetList = () => {
                       variant="contained"
                       color="secondary"
                       onClick={() => handleFinalizeBet(patient.id)}
-                      sx={{ backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
+                      sx={{
+                        backgroundColor: '#4caf50',
+                        '&:hover': { backgroundColor: '#388e3c' }
+                      }}
                     >
                       Finalize Bet
                     </Button>

@@ -10,9 +10,10 @@ import PatientCardPage from './pages/PatientCardPage'; // New import
 import CreateBetPage from './pages/CreateBetPage'; // New import
 import FinalizeBetList from './pages/FinalizeBetList'; // New import
 import FinalizeBetPage from './pages/FinalizeBetPage'; // New import
-
+import { NotificationsProvider } from './pages/NotificationContext';
 function App() {
   return (
+   <NotificationsProvider>
     <BrowserRouter>
       <div className="medical-app">
         <Header />
@@ -39,6 +40,7 @@ function App() {
         </div>
       </div>
     </BrowserRouter>
+    </NotificationsProvider>
   );
 }
 
