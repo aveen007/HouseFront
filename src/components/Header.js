@@ -16,7 +16,27 @@ const Header = () => {
                <NavLink to="/FinalizeBets" style={styles.link}>
                                 FinalizeBets
                               </NavLink>
-            </nav>
+                                 <NavLink to="/SignContract" style={styles.link}>
+                                                              LegalContract
+                                                            </NavLink>
+
+
+                <NavLink to="/CreateContract" style={styles.link}>
+                                                              CreateContract
+                                                            </NavLink>
+                <NavLink to="/ReviewProposals" style={styles.link}>
+                                                                              ReviewProposals
+                                                                            </NavLink>
+
+               <NavLink to="/ApprovedTests" style={styles.link}>
+                                                                                      ApprovedTests
+                                                                                    </NavLink>
+             <NavLink to="/ConsentForm" style={styles.link}>
+                                                                                      ConsentForm
+                                                                                    </NavLink>
+
+
+                    </nav>
         </header>
     );
 };

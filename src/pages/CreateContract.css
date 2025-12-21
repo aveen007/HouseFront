@@ -1,0 +1,294 @@
+/* CreateContract.css */
+.create-contract-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.contract-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 25px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.contract-header h1 {
+  color: #000;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 1.1rem;
+  font-weight: 400;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Form Sections */
+.contract-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.form-section {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 25px;
+  border: 1px solid #e2e8f0;
+}
+
+.form-section h2 {
+  color: #2d3748;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* Patient Selection */
+.patient-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.patient-select {
+  padding: 12px 16px;
+  border: 2px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  color: #2d3748;
+  transition: all 0.3s ease;
+  max-width: 400px;
+}
+
+.patient-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.patient-info {
+  padding: 12px 16px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.patient-name {
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+/* Checklist */
+.section-instruction {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.checklist-item {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.checklist-item:hover {
+  border-color: #3498db;
+  background: #f8fbff;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.section-checkbox {
+  display: none;
+}
+
+.custom-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #cbd5e0;
+  border-radius: 6px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.section-checkbox:checked + .custom-checkbox {
+  background: #3498db;
+  border-color: #3498db;
+}
+
+.section-checkbox:checked + .custom-checkbox::after {
+  content: '✓';
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.checklist-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  user-select: none;
+}
+
+.section-description {
+  color: #666;
+  font-size: 0.95rem;
+  padding-left: 36px;
+  line-height: 1.5;
+}
+
+/* Summary */
+.summary-content {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.summary-content p {
+  margin-bottom: 15px;
+  color: #2d3748;
+}
+
+.selected-sections-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.selected-sections-list li {
+  padding: 8px 0;
+  padding-left: 24px;
+  position: relative;
+  color: #2d3748;
+}
+
+.selected-sections-list li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.no-sections {
+  color: #e74c3c !important;
+  font-style: italic;
+}
+
+.select-patient-prompt {
+  color: #7f8c8d;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 30px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.save-button {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  letter-spacing: 0.5px;
+}
+
+.save-button:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.save-button:active {
+  transform: translateY(0);
+}
+
+.clear-button {
+  background: #f8f9fa;
+  color: #666;
+  border: 2px solid #ddd;
+  padding: 16px 40px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+.clear-button:hover {
+  background: #e9ecef;
+  border-color: #ccc;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .create-contract-container {
+    margin: 20px;
+    padding: 20px;
+  }
+
+  .contract-header h1 {
+    font-size: 2rem;
+  }
+
+  .form-section {
+    padding: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .save-button,
+  .clear-button {
+    width: 100%;
+  }
+
+  .patient-select {
+    max-width: 100%;
+  }
+}

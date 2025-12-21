@@ -1,0 +1,69 @@
+.consent-form-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.section {
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-item {
+  margin-bottom: 1rem;
+}
+
+.form-item label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.options label {
+  margin-right: 1.5rem;
+  font-weight: normal;
+}
+
+input[type="radio"], input[type="checkbox"] {
+  margin-right: 0.3rem;
+}
+
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.submit-btn:hover {
+  background-color: #0056b3;
+}

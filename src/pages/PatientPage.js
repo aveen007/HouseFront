@@ -14,9 +14,11 @@ import {
   Paper,
   Box
 } from '@mui/material';
+//import { TableCell, TableRow, Button } from '@mui/material';
 
 const PatientsPage = () => {
   const [patients, setPatients] = useState([]);
+
   const [insuranceCompanies, setInsuranceCompanies] = useState([]);
   const navigate = useNavigate();
 
@@ -71,6 +73,13 @@ const PatientsPage = () => {
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Date of Birth</TableCell>
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Gender</TableCell>
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Insurance Company</TableCell>
+<TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>
+  Propose Analysis
+</TableCell>
+<TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>
+  Approve Patient
+</TableCell>
+
             </TableRow>
           </TableHead>
           <TableBody>
@@ -87,7 +96,25 @@ const PatientsPage = () => {
                   {patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : 'Other'}
                 </TableCell>
                 <TableCell>{getCompanyName(patient.insuranceCompany)}</TableCell>
+<TableCell>
+  <Button
+    variant="outlined"
+    size="small"
+    onClick={() => navigate(`/propose-analysis/${patient.id}`)}
+  >
+    Propose
+  </Button>
+</TableCell>
 
+<TableCell>
+  <Button
+    variant="outlined"
+    size="small"
+    onClick={() => navigate(`/approve-card/${patient.id}`)}
+  >
+    Approve
+  </Button>
+</TableCell>
               </TableRow>
             ))}
           </TableBody>

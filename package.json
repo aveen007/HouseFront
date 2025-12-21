@@ -52,7 +52,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "or": "^0.2.0",
     "postcss": "^8.5.4",
-    "tailwindcss": "^4.1.8",
+    "tailwindcss": "^4.1.18",
     "ts-jest": "^29.3.0",
     "yarn": "^1.22.22"
   }

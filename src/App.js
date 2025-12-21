@@ -11,6 +11,14 @@ import CreateBetPage from './pages/CreateBetPage'; // New import
 import FinalizeBetList from './pages/FinalizeBetList'; // New import
 import FinalizeBetPage from './pages/FinalizeBetPage'; // New import
 import { NotificationsProvider } from './pages/NotificationContext';
+import  LegalContract  from './pages/LegalContract';
+import  CreateContract  from './pages/CreateContract';
+import ProposeAnalyses from './pages/ProposeAnalyses'
+import ReviewProposals from './pages/ReviewProposals'
+import ApprovedTests from './pages/ApprovedTests'
+import ConsentForm from './pages/ConsentForm'
+import ApproveCard from './pages/ApproveCard'
+
 function App() {
   return (
    <NotificationsProvider>
@@ -33,7 +41,14 @@ function App() {
             {/* Future Routes can be added here */}
             <Route path="/patients/:id/create-bet" element={<CreateBetPage />} />
             <Route path="/FinalizeBets" element={<FinalizeBetList />} />
-            <Route path="/patients/:id/FinalizeBets" element={<FinalizeBetPage />} />
+            <Route path="/SignContract" element={<LegalContract />} />
+            <Route path="/CreateContract" element={<CreateContract />} />
+            <Route path="/ReviewProposals" element={<ReviewProposals />} />
+            <Route path="/ApprovedTests" element={<ApprovedTests />} />
+            <Route path="/ConsentForm" element={<ConsentForm />} />
+          <Route path="/propose-analysis/:patientId" element={<ProposeAnalyses />} />
+          <Route path="/approve-card/:id" element={<ApproveCard />} />
+
             {/* <Route path="/reports" element={<ReportsPage />} /> */}
             {/* <Route path="/symptoms" element={<SymptomManagementPage />} /> */}
           </Routes>
