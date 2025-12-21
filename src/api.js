@@ -22,6 +22,7 @@ export const updatePatient = (patient) => {
     });
 };
 
+
 export const deletePatient = (patientId) => {
     return axios.delete(`${API_BASE_URL}/deletePatient?patientId=${patientId}`);
 };
