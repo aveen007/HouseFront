@@ -1,15 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./ConsentForm.css";
+import { fetchPatientAnalyses, fetchAnalysisTypes, updatePatientAnalysisStatus } from "../api";
 
-const ConsentForm = () => {
-  const [formData, setFormData] = useState({
-    cbc: "",
-    bmp: "",
-    chestXRay: "",
-    mriBrain: "",
-    ivFluid: "",
-    fluShot: false,
-  });
+const ConsentForm = ({ patientId }) => {
+  const [formData, setFormData] = useState({});
+  const [analyses, setAnalyses] = useState([]);
+  const [analysisTypesMap, setAnalysisTypesMap] = useState({});
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Fetch analysis types
+        const typesRes = await fetchAnalysisTypes();
+        const typesMap = {};
+        typesRes.data.forEach((a) => {
+          typesMap[a.id] = a.title; // adjust field name from backend
+        });
+        setAnalysisTypesMap(typesMap);
+
+        // Fetch patient analyses
+        const paRes = await fetchPatientAnalyses(patientId);
+
+        const patientAnalyses = paRes.data.map((pa) => ({
+          ...pa,
+          name: typesMap[pa.analysisId] || "Unknown Test",
+        }));
+
+        // Initialize formData to empty string (no choice yet)
+        const initialForm = {};
+        patientAnalyses.forEach((pa) => {
+          initialForm[pa.id] = ""; // values: "agree" or "decline"
+        });
+
+        setAnalyses(patientAnalyses);
+        setFormData(initialForm);
+      } catch (err) {
+        console.error("Failed to load analyses", err);
+      }
+    };
+
+    loadData();
+  }, [patientId]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -18,102 +49,67 @@ const ConsentForm = () => {
       [name]: type === "checkbox" ? checked : value,
     });
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form Submitted:", formData);
-    alert("Consent submitted successfully!");
-  };
+  try {
+    await Promise.all(
+      analyses.map((pa) => {
+        const choice = formData[pa.id];
+        let status;
+
+        if (choice === "agree") status = "0"; // accepted
+        else if (choice === "decline") status = "2"; // rejected
+        else return null; // skip if no choice
+
+        // Use pa.id here, not pa.analysisId
+        console.log(pa.id)
+        console.log(status)
+        return updatePatientAnalysisStatus(pa.id, status);
+      })
+    );
+
+    alert("Consent submitted successfully ✅");
+  } catch (err) {
+    console.error("Failed to submit consent", err);
+    alert("Failed to submit consent ❌");
+  }
+};
+
 
   return (
     <div className="consent-form-container">
       <h1>CONSENT TO PROPOSED TESTS</h1>
-      <p>Please review the tests and treatments below. Check “I Agree” or “I Decline” for each item. Your choices will recorded upon submission.</p>
+      <p>Please review the tests below. Check “I Agree” or “I Decline” for each item.</p>
+
       <form onSubmit={handleSubmit}>
-        {/* Laboratory Tests */}
-        <div className="section">
-          <h2>LABORATORY TESTS</h2>
-          <div className="form-item">
-            <label>Complete Blood Count (CBC)</label>
-            <p>To assess general health and detect various conditions.</p>
+        {analyses.map((pa) => (
+          <div className="form-item" key={pa.id}>
+            <label>{pa.name}</label>
             <div className="options">
               <label>
-                <input type="radio" name="cbc" value="agree" onChange={handleChange} /> I Agree
+                <input
+                  type="radio"
+                  name={pa.id}
+                  value="agree"
+                  checked={formData[pa.id] === "agree"}
+                  onChange={handleChange}
+                />{" "}
+                I Agree
               </label>
               <label>
-                <input type="radio" name="cbc" value="decline" onChange={handleChange} /> I Decline
+                <input
+                  type="radio"
+                  name={pa.id}
+                  value="decline"
+                  checked={formData[pa.id] === "decline"}
+                  onChange={handleChange}
+                />{" "}
+                I Decline
               </label>
             </div>
           </div>
-        </div>
-
-        {/* Metabolic Panel */}
-        <div className="section">
-          <h2>METABOLIC PANEL (BMP)</h2>
-          <div className="form-item">
-            <label>Metabolic Panel (BMP)</label>
-            <p>electrolyte, and kidney function.</p>
-            <div className="options">
-              <label>
-                <input type="radio" name="bmp" value="decline" onChange={handleChange} /> I Decline
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Imaging Scans */}
-        <div className="section">
-          <h2>IMAGING SCANS</h2>
-          <div className="form-item">
-            <label>Chest X-Ray</label>
-            <p>To view your heart, lungs, and bones.</p>
-            <div className="options">
-              <label>
-                <input type="radio" name="chestXRay" value="agree" onChange={handleChange} /> I Agree
-              </label>
-              <label>
-                <input type="radio" name="chestXRay" value="decline" onChange={handleChange} /> I Decline
-              </label>
-            </div>
-          </div>
-
-          <div className="form-item">
-            <label>MRI Brain</label>
-            <p>To produce detailed images of your brain and nervous tissue.</p>
-            <div className="options">
-              <label>
-                <input type="radio" name="mriBrain" value="agree" onChange={handleChange} /> I Agree
-              </label>
-              <label>
-                <input type="radio" name="mriBrain" value="decline" onChange={handleChange} /> I Decline
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Procedures/Treatments */}
-        <div className="section">
-          <h2>PROCEDURES/TREATMENTS</h2>
-          <div className="form-item">
-            <label>IV Fluid Administration</label>
-            <p>To provide hydration and medication.</p>
-            <div className="options">
-              <label>
-                <input type="radio" name="ivFluid" value="agree" onChange={handleChange} /> I Agree
-              </label>
-              <label>
-                <input type="radio" name="ivFluid" value="decline" onChange={handleChange} /> I Decline
-              </label>
-            </div>
-          </div>
-
-          <div className="form-item">
-            <label>
-              <input type="checkbox" name="fluShot" checked={formData.fluShot} onChange={handleChange} /> Vaccination - Flu Shot
-            </label>
-            <p>Annual influenza protection.</p>
-          </div>
-        </div>
+        ))}
 
         <button type="submit" className="submit-btn">SUBMIT CONSENT</button>
       </form>

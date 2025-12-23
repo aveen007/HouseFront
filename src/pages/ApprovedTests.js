@@ -1,30 +1,68 @@
 // ApprovedTests.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./ApprovedTests.css";
-
-const tests = [
-  { name: "Alice Smith", type: "Blood Panel", date: "2023-10-26", status: "Completed" },
-  { name: "Bob Johnson", type: "Genetic Screen", date: "2023-10-27", status: "In Progress" },
-  { name: "Charlie Brown", type: "Biopsy", date: "2023-10-27", status: "Pending" },
-];
+import {
+  fetchApprovedAnalyses,
+  fetchPatients,
+  fetchAnalysisTypes,
+} from "../api";
 
 const statusClass = (status) => {
-  switch(status) {
+  switch (status) {
     case "Completed":
       return "status-completed";
     case "In Progress":
       return "status-progress";
-    case "Pending":
-      return "status-pending";
+    case "Accepted":
+      return "status-pending"; // reuse style or rename if you want
     default:
       return "";
   }
 };
 
 const ApprovedTests = () => {
+  const [tests, setTests] = useState([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [approvedRes, patientsRes, analysesRes] = await Promise.all([
+          fetchApprovedAnalyses(),
+          fetchPatients(),
+          fetchAnalysisTypes(),
+        ]);
+
+        const patientMap = {};
+        patientsRes.data.forEach((p) => {
+          patientMap[p.id] = `${p.firstName} ${p.lastName}`;
+        });
+
+        const analysisMap = {};
+        analysesRes.data.forEach((a) => {
+          analysisMap[a.id] = a.title; // same as last time
+        });
+
+        const rows = approvedRes.data.map((a) => ({
+          id: a.id,
+          name: patientMap[a.patientId] || "Unknown",
+          type: analysisMap[a.analysisId] || "Unknown Test",
+          date: a.date,
+          status: a.status, // "Accepted"
+        }));
+
+        setTests(rows);
+      } catch (err) {
+        console.error("Failed to load approved tests", err);
+      }
+    };
+
+    loadData();
+  }, []);
+
   return (
     <div className="approved-tests-container">
       <h2>Approved Tests</h2>
+
       <table className="tests-table">
         <thead>
           <tr>
@@ -34,9 +72,10 @@ const ApprovedTests = () => {
             <th>Status</th>
           </tr>
         </thead>
+
         <tbody>
-          {tests.map((test, idx) => (
-            <tr key={idx}>
+          {tests.map((test) => (
+            <tr key={test.id}>
               <td>{test.name}</td>
               <td>{test.type}</td>
               <td>{test.date}</td>

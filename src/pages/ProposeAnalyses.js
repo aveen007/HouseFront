@@ -1,27 +1,81 @@
 import { useParams } from "react-router-dom";
-import { fetchPatient } from "../api";
+import { fetchPatient, fetchAnalysisTypes } from "../api";
 import { useState, useEffect } from "react";
-import "./LegalContract.css"; // Make sure path is correct
+import "./LegalContract.css";
+import {
+  createPatientAnalysis,
+} from "../api";
 
 export default function ProposeAnalyses() {
-  const [patient, setPatient] = useState({});
   const { patientId } = useParams();
 
+  const [patient, setPatient] = useState({});
+  const [analysisTypes, setAnalysisTypes] = useState([]);
+  const [selectedAnalyses, setSelectedAnalyses] = useState({});
+  const [comments, setComments] = useState(
+    "Patient showing symptoms of internal bleeding"
+  );
+
+  // Fetch patient
   useEffect(() => {
     fetchPatient(patientId)
       .then((response) => setPatient(response.data))
       .catch((error) => console.error("Error fetching patient", error));
   }, [patientId]);
 
-  const [tests, setTests] = useState({
-    mri: true,
-    blood: true,
-    antibiotic: false,
-  });
+  // Fetch analysis types
+  useEffect(() => {
+    fetchAnalysisTypes()
+      .then((response) => {
+        setAnalysisTypes(response.data);
 
-  const [comments, setComments] = useState(
-    "Patient showing symptoms of internal bleeding"
-  );
+        // Initialize all checkboxes as unchecked
+        const initialSelection = {};
+        response.data.forEach((item) => {
+          initialSelection[item.id] = false;
+        });
+        setSelectedAnalyses(initialSelection);
+      })
+      .catch((error) =>
+        console.error("Error fetching analysis types", error)
+      );
+  }, []);
+
+  const handleCheckboxChange = (id) => {
+    setSelectedAnalyses((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleSubmit = async () => {
+    const today = new Date().toISOString().split("T")[0];
+
+    // Get selected analysis IDs
+    const selectedAnalysisIds = analysisTypes
+      .filter((a) => selectedAnalyses[a.id])
+      .map((a) => a.id);
+
+    try {
+      await Promise.all(
+        selectedAnalysisIds.map((analysisId) =>
+          createPatientAnalysis({
+            patientId: patientId,
+            analysisId: analysisId,
+            date: today,
+            status: "0",
+            betId: "1",
+          })
+        )
+      );
+
+      alert("Analyses submitted for approval successfully ✅");
+    } catch (error) {
+      console.error("Error submitting analyses", error);
+      alert("Failed to submit analyses ❌");
+    }
+  };
+
 
   return (
     <div className="checklist-container">
@@ -44,46 +98,28 @@ export default function ProposeAnalyses() {
         </div>
       </div>
 
-      {/* Tests */}
+      {/* Dynamic Tests */}
       <div className="checklist-items">
         <div className="checklist-item">
           <div className="section-content">
             <span className="section-title">Tests and Treatments:</span>
-            <label className="select-all-label">
-              <input
-                type="checkbox"
-                className="select-all-checkbox"
-                checked={tests.mri}
-                onChange={(e) =>
-                  setTests({ ...tests, mri: e.target.checked })
-                }
-              />
-              MRI
-            </label>
 
-            <label className="select-all-label">
-              <input
-                type="checkbox"
-                className="select-all-checkbox"
-                checked={tests.blood}
-                onChange={(e) =>
-                  setTests({ ...tests, blood: e.target.checked })
-                }
-              />
-              Blood Test
-            </label>
-
-            <label className="select-all-label">
-              <input
-                type="checkbox"
-                className="select-all-checkbox"
-                checked={tests.antibiotic}
-                onChange={(e) =>
-                  setTests({ ...tests, antibiotic: e.target.checked })
-                }
-              />
-              Antibiotic Therapy
-            </label>
+            {analysisTypes.map((analysis) => (
+              <label
+                key={analysis.id}
+                className="select-all-label"
+              >
+                <input
+                  type="checkbox"
+                  className="select-all-checkbox"
+                  checked={selectedAnalyses[analysis.id] || false}
+                  onChange={() =>
+                    handleCheckboxChange(analysis.id)
+                  }
+                />
+                {analysis.title}
+              </label>
+            ))}
           </div>
         </div>
       </div>
@@ -107,7 +143,7 @@ export default function ProposeAnalyses() {
       <div className="action-section">
         <button
           className="agree-sign-button"
-          onClick={() => console.log({ patient, tests, comments })}
+          onClick={handleSubmit}
         >
           Submit for Approval
         </button>

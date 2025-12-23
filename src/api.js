@@ -21,8 +21,18 @@ export const updatePatient = (patient) => {
         headers: { 'Content-Type': 'application/json' }
     });
 };
-
-
+export const fetchAnalysisTypes = () => {
+  return axios.get("http://localhost:8080/api/getAnalysesTypes");
+};
+export const createPatientAnalysis = (data) => {
+  return axios.post(
+    "http://localhost:8080/api/createPatientAnalysis",
+    data
+  );
+};
+export const fetchPatientAnalyses = () => {
+  return axios.get(`${API_BASE_URL}/patientAnalyses`);
+};
 export const deletePatient = (patientId) => {
     return axios.delete(`${API_BASE_URL}/deletePatient?patientId=${patientId}`);
 };
@@ -39,4 +49,17 @@ export const fetchSymptoms = () => {
 };
 export const fetchInsuranceCompanies = () => {
     return axios.get(`${API_BASE_URL}/getInsuranceCompanies`);
+};
+export const updatePatientAnalysisStatus = (patientAnalysisId, status) => {
+  return axios.put(
+    `${API_BASE_URL}/updatePatientAnalysisStatus?patientAnalysisId=${patientAnalysisId}`,
+    status, // raw body
+    {
+      headers: { "Content-Type": "application/json" }, // or application/json if backend accepts
+    }
+  );
+};
+// fetch all approved analyses
+export const fetchApprovedAnalyses = () => {
+  return axios.get(`${API_BASE_URL}/getApprovedAnalyses`);
 };

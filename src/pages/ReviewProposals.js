@@ -1,72 +1,140 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./ReviewProposals.css";
-
-const proposals = [
-  {
-    name: "Alice Smith",
-    tests: "Blood Panel, MRI",
-    proposedBy: "2023-10-26",
-    reasoning:
-      "Detailed explanation for proposed tests: Ruling out differential diagnoses, identifying specific genetic markers, assessing abnormality, etc. Based the initial patient presentation and history.",
-  },
-  {
-    name: "Bob Johnson",
-    tests: "Genetic Screen",
-    proposedBy: "Dr Lee 25",
-    reasoning:
-      "Detailed explanation for proposed tests: Ruling out differential diagnoses, identifying specific genetic markers, assessing abnormality, etc. Based the initial patient presentation and history.",
-  },
-  {
-    name: "Charlie Brown",
-    tests: "Biopsy, CT Scan",
-    proposedBy: "2023-10-24",
-    reasoning:
-      "Detailed explanation for proposed tests: Ruling out differential diagnoses, identifying specific genetic markers, assessing abnormality, etc. Based the initial patient presentation and history.",
-  },
-  {
-    name: "Diana Prince",
-    tests: "Ultrasound",
-    proposedBy: "2023-10-23",
-    reasoning:
-      "Detailed explanation for proposed tests: Ruling out differential diagnoses, identifying specific genetic markers, assessing abnormality, etc. Based the initial patient presentation and history.",
-  },
-];
+import {
+  fetchPatientAnalyses,
+  fetchPatients,
+  fetchAnalysisTypes,
+  updatePatientAnalysisStatus,
+} from "../api";
 
 export default function ReviewProposals() {
+  const [rows, setRows] = useState([]);
+
+  const loadData = async () => {
+    try {
+      const [paRes, patientsRes, analysesRes] = await Promise.all([
+        fetchPatientAnalyses(),
+        fetchPatients(),
+        fetchAnalysisTypes(),
+      ]);
+
+      console.log("✅ Patient Analyses:", paRes.data);
+      console.log("✅ Patients:", patientsRes.data);
+      console.log("✅ Analysis Types:", analysesRes.data);
+
+      const patientMap = {};
+      patientsRes.data.forEach((p) => {
+        patientMap[p.id] = `${p.firstName} ${p.lastName}`;
+      });
+
+      const analysisMap = {};
+      analysesRes.data.forEach((a) => {
+        analysisMap[a.id] = a.title; // adjust if backend uses different field
+      });
+
+      const grouped = {};
+
+      paRes.data.forEach((pa) => {
+        if (!grouped[pa.patientId]) {
+          grouped[pa.patientId] = [];
+        }
+
+        grouped[pa.patientId].push({
+          patientAnalysisId: pa.id,
+          name: analysisMap[pa.analysisId],
+        });
+      });
+
+      const tableRows = Object.keys(grouped).map((patientId) => ({
+        patientId,
+        patientName: patientMap[patientId] || "Unknown",
+        analyses: grouped[patientId],
+      }));
+
+      setRows(tableRows);
+    } catch (err) {
+      console.error("❌ Failed to load proposals", err);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleApprove = async (analyses) => {
+    try {
+      await Promise.all(
+        analyses.map((a) =>
+          updatePatientAnalysisStatus(a.patientAnalysisId, "3")
+        )
+      );
+      alert("Approved ✅");
+      loadData();
+    } catch (err) {
+      console.error("Approve failed", err);
+    }
+  };
+
+  const handleReject = async (analyses) => {
+    try {
+      await Promise.all(
+        analyses.map((a) =>
+          updatePatientAnalysisStatus(a.patientAnalysisId, "2")
+        )
+      );
+      alert("Rejected ❌");
+      loadData();
+    } catch (err) {
+      console.error("Reject failed", err);
+    }
+  };
+
   return (
     <div className="review-container">
       <h2 className="review-title">Review & Approve Proposals</h2>
-      <div className="review-content">
-        <table className="proposals-table">
-          <thead>
-            <tr>
-              <th>Patient Name</th>
-              <th>Proposed Tests</th>
-              <th>Proposed By</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {proposals.map((p, idx) => (
-              <tr key={idx}>
-                <td>{p.name}</td>
-                <td>{p.tests}</td>
-                <td>{p.proposedBy}</td>
-                <td className="actions">
-                  <button className="approve">Approve</button>
-                  <button className="reject">Reject</button>
-                  <button className="changes">Request Changes</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
 
-        <div className="reasoning-panel">
-          <h4>Reasoning from Diagnostician</h4>
-          <p>{proposals[0].reasoning}</p>
-        </div>
-      </div>
+      <table className="proposals-table">
+        <thead>
+          <tr>
+            <th>Patient Name</th>
+            <th>Proposed Tests</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.patientId}>
+              <td>{row.patientName}</td>
+
+              <td>
+                {row.analyses.map((a, i) => (
+                  <span key={a.patientAnalysisId}>
+                    {a.name}
+                    {i < row.analyses.length - 1 && ", "}
+                  </span>
+                ))}
+              </td>
+
+              <td className="actions">
+                <button
+                  className="approve"
+                  onClick={() => handleApprove(row.analyses)}
+                >
+                  Approve
+                </button>
+
+                <button
+                  className="reject"
+                  onClick={() => handleReject(row.analyses)}
+                >
+                  Reject
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
