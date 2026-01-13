@@ -1,145 +1,129 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './LegalContract.css';
+import {
+  fetchContractsByPatient,
+  updateContractStatus,
+  signContract
+} from '../api';
+
+const PATIENT_ID = 6;
 
 const LegalContract = () => {
-  const [checkedItems, setCheckedItems] = useState({});
-  const [allChecked, setAllChecked] = useState(false);
+  const [contract, setContract] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [signing, setSigning] = useState(false);
 
-  const contractSections = [
-    {
-      id: 'terms',
-      title: 'Terms and Conditions',
-      description: 'Standard terms governing the use and conditions of this agreement.'
-    },
-    {
-      id: 'agreement',
-      title: 'Agreement to Participate',
-      description: 'Mutual consent to participate under the specified terms.'
-    },
-    {
-      id: 'payment',
-      title: 'Terms of Payment',
-      description: 'Payment schedule, amounts, methods, and deadlines.'
-    },
-    {
-      id: 'dispute',
-      title: 'Dispute Resolution',
-      description: 'Procedures for resolving disagreements and disputes.'
+  /* ---------------- LOAD CONTRACT ---------------- */
+  useEffect(() => {
+    const loadContract = async () => {
+      try {
+        const res = await fetchContractsByPatient(PATIENT_ID);
+
+        if (!res.data || res.data.length === 0) {
+          alert('No contract found for this patient');
+          return;
+        }
+
+        // pick latest contract (simple strategy)
+        const latest = res.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        )[0];
+
+        setContract(latest);
+      } catch (error) {
+        console.error('Failed to load contract', error);
+        alert('Failed to load contract');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadContract();
+  }, []);
+
+  /* ---------------- SIGN FLOW ---------------- */
+  const handleAgreeAndSign = async () => {
+    if (!contract) return;
+
+    try {
+      setSigning(true);
+
+      // 1️⃣ Ensure status is READY
+      if (contract.status !== 'READY') {
+        await updateContractStatus(contract.contractId, 'READY');
+
+        setContract(prev => ({
+          ...prev,
+          status: 'READY'
+        }));
+      }
+
+      // 2️⃣ Sign contract
+      await signContract(contract.contractId, {
+        patientId: PATIENT_ID,
+        signedBy: 'Иван Иванов',
+        signature: 'e-signature-hash-12345'
+      });
+
+      alert('Contract signed successfully');
+
+      setContract(prev => ({
+        ...prev,
+        status: 'SIGNED',
+        signedAt: new Date().toISOString(),
+        signedBy: 'Иван Иванов'
+      }));
+    } catch (error) {
+      console.error('Signing failed', error);
+      alert('Failed to sign contract');
+    } finally {
+      setSigning(false);
     }
-  ];
-
-  const handleCheck = (id) => {
-    setCheckedItems(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
   };
 
-  const handleSelectAll = () => {
-    const newState = !allChecked;
-    const newCheckedItems = {};
-    contractSections.forEach(section => {
-      newCheckedItems[section.id] = newState;
-    });
-    setCheckedItems(newCheckedItems);
-    setAllChecked(newState);
-  };
+  /* ---------------- UI ---------------- */
+  if (loading) {
+    return <div className="loading">Loading contract...</div>;
+  }
 
-  const handleAgreeAndSign = () => {
-    const allSectionsChecked = contractSections.every(section => checkedItems[section.id]);
-
-    if (!allSectionsChecked) {
-      alert('Please review and check all sections before signing.');
-      return;
-    }
-
-    alert('Contract signed successfully! Redirecting to confirmation...');
-    // Here you would typically:
-    // 1. Send signature to backend
-    // 2. Redirect to confirmation page
-    // 3. Store signed contract data
-  };
-
-  const checkedCount = Object.values(checkedItems).filter(Boolean).length;
-  const totalSections = contractSections.length;
+  if (!contract) {
+    return <div className="error">No contract available</div>;
+  }
 
   return (
-    <div className="checklist-container">
+    <div className="legal-contract-container">
       {/* Header */}
       <div className="contract-header">
-        <h1>Sign Legal Contract</h1>
-        <p className="subtitle">Review and agree to all sections below</p>
+        <h1>{contract.termsTitle}</h1>
+        <p className="subtitle">
+          Contract version {contract.termsVersion}
+        </p>
       </div>
 
-      {/* Select All Option */}
-      <div className="select-all-container">
-        <label className="select-all-label">
-          <input
-            type="checkbox"
-            checked={allChecked}
-            onChange={handleSelectAll}
-            className="select-all-checkbox"
-          />
-          <span className="select-all-text">Select All Sections</span>
-        </label>
-        <div className="progress-indicator">
-          {checkedCount} of {totalSections} sections reviewed
-        </div>
+      {/* Contract Content */}
+      <div className="contract-content">
+        <pre className="terms-text">
+          {contract.termsSnapshot}
+        </pre>
       </div>
 
-      {/* Checklist Items */}
-      <div className="checklist-items">
-        {contractSections.map((section) => (
-          <div
-            key={section.id}
-            className={`checklist-item ${checkedItems[section.id] ? 'checked' : ''}`}
-            onClick={() => handleCheck(section.id)}
-          >
-            <div className="checkbox-container">
-              <input
-                type="checkbox"
-                id={section.id}
-                checked={checkedItems[section.id] || false}
-                onChange={() => handleCheck(section.id)}
-                className="section-checkbox"
-              />
-              <span className="custom-checkbox"></span>
-            </div>
-
-            <div className="section-content">
-              <label htmlFor={section.id} className="section-title">
-                {section.title}
-              </label>
-              <p className="section-description">{section.description}</p>
-            </div>
-
-            <div className="review-action">
-              <button
-                className="review-button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  alert(`Opening ${section.title} for review...`);
-                  // Here you would open the full section text
-                }}
-              >
-                Review
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Action Button */}
+      {/* Action */}
       <div className="action-section">
         <button
           className="agree-sign-button"
           onClick={handleAgreeAndSign}
-          disabled={checkedCount !== totalSections}
+          disabled={signing || contract.status === 'SIGNED'}
         >
-          Agree and Sign
+          {contract.status === 'SIGNED'
+            ? 'Contract Signed'
+            : signing
+              ? 'Signing...'
+              : 'Agree and Sign'}
         </button>
+
         <p className="signature-note">
-          By clicking "Agree and Sign", you acknowledge that you have read and agree to all sections above.
+          By clicking "Agree and Sign", you confirm that you have read and agree
+          to the terms of this contract.
         </p>
       </div>
     </div>

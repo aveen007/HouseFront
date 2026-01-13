@@ -1,6 +1,7 @@
 import axios from 'axios';
 
- const API_BASE_URL = 'http://localhost:8080/api';    // For local development
+ const API_BASE_URL = 'http://localhost:9314/api';    // For local development
+// const API_BASE_URL = 'http://localhost:8080/api';    // For local development
 //const API_BASE_URL = '/api';    // For deployment
 
 // Patients
@@ -80,4 +81,27 @@ export const updatePatientAnalysisStatus = (patientAnalysisId, status) => {
 // fetch all approved analyses
 export const fetchApprovedAnalyses = () => {
   return axios.get(`${API_BASE_URL}/getApprovedAnalyses`);
+};
+
+/* -------- Get contracts by patient -------- */
+export const fetchContractsByPatient = (patientId) => {
+  return axios.get(`${API_BASE_URL}/contracts/patient/${patientId}`);
+};
+
+/* -------- Update contract status -------- */
+export const updateContractStatus = (contractId, status) => {
+  return axios.put(
+    `${API_BASE_URL}/contracts/${contractId}`,
+    { status },
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+};
+
+/* -------- Sign contract -------- */
+export const signContract = (contractId, payload) => {
+  return axios.post(
+    `${API_BASE_URL}/contracts/${contractId}/sign`,
+    payload,
+    { headers: { 'Content-Type': 'application/json' } }
+  );
 };
