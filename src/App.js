@@ -48,6 +48,7 @@ function App() {
             <Route path="/ConsentForm" element={<ConsentForm />} />
           <Route path="/propose-analysis/:patientId" element={<ProposeAnalyses />} />
           <Route path="/approve-card/:id" element={<ApproveCard />} />
+           <Route path="/patients/:id/FinalizeBets" element={<FinalizeBetPage />} />
 
             {/* <Route path="/reports" element={<ReportsPage />} /> */}
             {/* <Route path="/symptoms" element={<SymptomManagementPage />} /> */}
