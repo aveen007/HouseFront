@@ -7,9 +7,19 @@ import axios from 'axios';
 export const fetchPatients = () => {
     return axios.get(`${API_BASE_URL}/getPatients`);
 };
-
+export const fetchContractTerms = () => {
+  return axios.get(`${API_BASE_URL}/contracts/terms`);
+};
 export const fetchPatient = (patientId) => {
     return axios.get(`${API_BASE_URL}/getPatient?patientId=${patientId}`);
+};
+// api/contractApi.js
+export const createContract = (payload) => {
+  return axios.post('http://localhost:8080/api/contracts', payload, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 };
 
 export const createPatient = (patient) => {
@@ -33,6 +43,14 @@ export const createPatientAnalysis = (data) => {
 export const fetchPatientAnalyses = () => {
   return axios.get(`${API_BASE_URL}/patientAnalyses`);
 };
+
+export const fetchPatientAnalysesByPatient = (patientId) => {
+  return axios.get("http://localhost:8080/api/getPatientAnalyses", {
+    params: { patientId },
+  });
+};
+
+
 export const deletePatient = (patientId) => {
     return axios.delete(`${API_BASE_URL}/deletePatient?patientId=${patientId}`);
 };

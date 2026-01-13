@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   Container,
@@ -11,13 +11,13 @@ import {
   ListItem,
   ListItemText,
   Divider,
-  Chip,
-  CircularProgress
+  CircularProgress,
+  Snackbar,
+  Alert
 } from '@mui/material';
 
 const ApproveCard = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [patient, setPatient] = useState(null);
   const [symptoms, setSymptoms] = useState([]);
   const [allSymptoms, setAllSymptoms] = useState([]);
@@ -31,94 +31,82 @@ const ApproveCard = () => {
     allSymptoms: false
   });
 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  // Fetch data
   useEffect(() => {
-    // Fetch all available symptoms
-    setLoading(prev => ({...prev, allSymptoms: true}));
+    setLoading(prev => ({ ...prev, allSymptoms: true }));
     axios.get('http://localhost:8080/api/getSymptoms')
-      .then(response => {
-        setAllSymptoms(response.data);
-      })
-      .catch(error => console.error("Error fetching all symptoms", error))
-      .finally(() => setLoading(prev => ({...prev, allSymptoms: false})));
+      .then(res => setAllSymptoms(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(prev => ({ ...prev, allSymptoms: false })));
 
-    // Fetch insurance companies
-    setLoading(prev => ({...prev, insurance: true}));
+    setLoading(prev => ({ ...prev, insurance: true }));
     axios.get('http://localhost:8080/api/getInsuranceCompanies')
-      .then(response => {
-        setInsuranceCompanies(response.data);
-      })
-      .catch(error => console.error("Error fetching insurance companies", error))
-      .finally(() => setLoading(prev => ({...prev, insurance: false})));
-console.log(id)
+      .then(res => setInsuranceCompanies(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(prev => ({ ...prev, insurance: false })));
+
     if (id) {
-      // Fetch patient data
-      setLoading(prev => ({...prev, patient: true}));
+      setLoading(prev => ({ ...prev, patient: true }));
       axios.get(`http://localhost:8080/api/getPatient?patientId=${id}`)
-        .then(response => {
-           console.log(response.data);
-                            console.log(id);
-          setPatient(response.data);
+        .then(res => setPatient(res.data))
+        .catch(err => console.error(err))
+        .finally(() => setLoading(prev => ({ ...prev, patient: false })));
 
-
-        })
-        .catch(error => console.error("Error fetching patient", error))
-        .finally(() => setLoading(prev => ({...prev, patient: false})));
-
-      // Fetch visit ID for this patient
-      setLoading(prev => ({...prev, visit: true}));
+      setLoading(prev => ({ ...prev, visit: true }));
       axios.get('http://localhost:8080/api/getVisitPatients')
-        .then(response => {
-          const patientVisit = response.data.find(p => p.id === parseInt(id));
-          if (patientVisit) {
-            setVisitId(patientVisit.visitId);
-          }
+        .then(res => {
+          const patientVisit = res.data.find(p => p.id === parseInt(id));
+          if (patientVisit) setVisitId(patientVisit.visitId);
         })
-        .catch(error => console.error("Error fetching visit ID", error))
-        .finally(() => setLoading(prev => ({...prev, visit: false})));
+        .catch(err => console.error(err))
+        .finally(() => setLoading(prev => ({ ...prev, visit: false })));
     }
   }, [id]);
 
   useEffect(() => {
-    if (visitId && allSymptoms.length > 0) { // Only fetch when we have both visitId and allSymptoms
-      setLoading(prev => ({...prev, symptoms: true}));
-
+    if (visitId && allSymptoms.length > 0) {
+      setLoading(prev => ({ ...prev, symptoms: true }));
       axios.get(`http://localhost:8080/api/getVisitSymptoms?visitId=${visitId}`)
-        .then(response => {
-          // Map symptom IDs to symptom names using allSymptoms
-          const symptomsWithDetails = response.data.map(visitSymptom => {
-            const symptomDetails = allSymptoms.find(s => s.id === visitSymptom);
-            return symptomDetails ? {
-              ...visitSymptom,
-              name: symptomDetails.symptomName,
-              description: symptomDetails.description || 'No description available'
-            } : null;
-          }).filter(Boolean); // Filter out any null entries if symptom wasn't found
-//            console.log(symptomsWithDetails);
-
-          setSymptoms(symptomsWithDetails);
+        .then(res => {
+          const mappedSymptoms = res.data.map(symId => {
+            const s = allSymptoms.find(a => a.id === symId);
+            return s ? { name: s.symptomName } : null;
+          }).filter(Boolean);
+          setSymptoms(mappedSymptoms);
         })
-        .catch(error => console.error("Error fetching symptoms", error))
-        .finally(() => setLoading(prev => ({...prev, symptoms: false})));
+        .catch(err => console.error(err))
+        .finally(() => setLoading(prev => ({ ...prev, symptoms: false })));
     }
-  }, [visitId, allSymptoms]); // Depend on both visitId and allSymptoms
-//console.log(patient);
-  // Find the patient's insurance company
-//  const patientInsuranceCompany = insuranceCompanies.find(
-//    company => company.id === patient.insuranceCompany.id
-//  );
+  }, [visitId, allSymptoms]);
 
+  const patientInsuranceCompany = patient?.insuranceCompany
+    ? insuranceCompanies.find(c => c.id === patient.insuranceCompany.id)
+    : null;
 
-let patientInsuranceCompany = null;
+  const handleApprovePatient = async () => {
+    if (!visitId) return;
 
-if (patient && patient.insuranceCompany) {
-  patientInsuranceCompany = insuranceCompanies.find(
-    company => company.id === patient.insuranceCompany.id
-  );
-}
-//console.log(insuranceCompanies);
-//console.log("shit");
-  const handleApprovePatient = () => {
-//    navigate(`/patients/${id}/approve-card`);
+    try {
+      await axios.put(
+        `http://localhost:8080/api/visits/${visitId}/updateHDStatus`,
+        `"Accepted"`,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      setSnackbarMessage('Patient approved successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+
+    } catch (error) {
+      console.error(error);
+      setSnackbarMessage('Failed to approve patient');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
   };
 
   if (loading.patient || loading.insurance || loading.allSymptoms) {
@@ -134,80 +122,62 @@ if (patient && patient.insuranceCompany) {
       <Paper elevation={3} sx={{ p: 4 }}>
         {/* Patient Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h3" component="h1" gutterBottom>
-            {patient?.firstName} {patient?.lastName}
-          </Typography>
+          <Typography variant="h3">{patient?.firstName} {patient?.lastName}</Typography>
           <Typography variant="subtitle1" color="text.secondary">
             Date of Birth: {patient?.dateOfBirth && new Date(patient.dateOfBirth).toLocaleDateString()}
           </Typography>
-          {visitId && (
-            <Typography variant="subtitle1" color="text.secondary">
-              Visit ID: {visitId}
-            </Typography>
-          )}
+          {visitId && <Typography variant="subtitle1" color="text.secondary">Visit ID: {visitId}</Typography>}
         </Box>
 
-        {/* Insurance Company */}
+        {/* Insurance */}
         {patientInsuranceCompany && (
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-              Insurance Information
-            </Typography>
+            <Typography variant="h5">Insurance Information</Typography>
             <Box sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
-              <Typography variant="body1">
-                <strong>Company:</strong> {patientInsuranceCompany.companyName}
-              </Typography>
-              {patient?.insurancePolicyNumber && (
-                <Typography variant="body1">
-                  <strong>Policy Number:</strong> {patient.insurancePolicyNumber}
-                </Typography>
-              )}
+              <Typography><strong>Company:</strong> {patientInsuranceCompany.companyName}</Typography>
+              {patient?.insurancePolicyNumber && <Typography><strong>Policy Number:</strong> {patient.insurancePolicyNumber}</Typography>}
             </Box>
           </Box>
         )}
 
-        {/* Symptoms List */}
+        {/* Symptoms */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" component="h2" gutterBottom>
-            Reported Symptoms
-          </Typography>
+          <Typography variant="h5">Reported Symptoms</Typography>
           {loading.symptoms ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <CircularProgress />
-            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>
           ) : symptoms.length > 0 ? (
-            <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-              {symptoms.map((symptom, index) => (
-                <React.Fragment key={index}>
-                  <ListItem alignItems="flex-start">
-                    <ListItemText
-                      primary={symptom.name}
-
-                    />
-                  </ListItem>
-                  {index < symptoms.length - 1 && <Divider variant="inset" component="li" />}
+            <List>
+              {symptoms.map((s, i) => (
+                <React.Fragment key={i}>
+                  <ListItem><ListItemText primary={s.name} /></ListItem>
+                  {i < symptoms.length - 1 && <Divider />}
                 </React.Fragment>
               ))}
             </List>
           ) : (
-            <Typography variant="body1" color="text.secondary">
-              No symptoms reported for this visit.
-            </Typography>
+            <Typography color="text.secondary">No symptoms reported for this visit.</Typography>
           )}
         </Box>
 
-        {/* Create Bet Button */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            onClick={handleApprovePatient}
-          >
+        {/* Approve Button */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button variant="contained" color="primary" onClick={handleApprovePatient}>
             Approve patient
           </Button>
         </Box>
       </Paper>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snackbarSeverity} onClose={() => setSnackbarOpen(false)} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

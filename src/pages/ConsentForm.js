@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./ConsentForm.css";
-import { fetchPatientAnalyses, fetchAnalysisTypes, updatePatientAnalysisStatus } from "../api";
+import { fetchPatientAnalysesByPatient, fetchAnalysisTypes, updatePatientAnalysisStatus } from "../api";
 
 const ConsentForm = ({ patientId }) => {
   const [formData, setFormData] = useState({});
@@ -19,7 +19,7 @@ const ConsentForm = ({ patientId }) => {
         setAnalysisTypesMap(typesMap);
 
         // Fetch patient analyses
-        const paRes = await fetchPatientAnalyses(patientId);
+        const paRes = await fetchPatientAnalysesByPatient(6);
 
         const patientAnalyses = paRes.data.map((pa) => ({
           ...pa,
