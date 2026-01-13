@@ -16,7 +16,7 @@ export const fetchPatient = (patientId) => {
 };
 // api/contractApi.js
 export const createContract = (payload) => {
-  return axios.post('http://localhost:8080/api/contracts', payload, {
+  return axios.post('http://localhost:9314/api/contracts', payload, {
     headers: {
       'Content-Type': 'application/json'
     }
@@ -33,11 +33,11 @@ export const updatePatient = (patient) => {
     });
 };
 export const fetchAnalysisTypes = () => {
-  return axios.get("http://localhost:8080/api/getAnalysesTypes");
+  return axios.get("http://localhost:9314/api/getAnalysesTypes");
 };
 export const createPatientAnalysis = (data) => {
   return axios.post(
-    "http://localhost:8080/api/createPatientAnalysis",
+    "http://localhost:9314/api/createPatientAnalysis",
     data
   );
 };
@@ -46,7 +46,7 @@ export const fetchPatientAnalyses = () => {
 };
 
 export const fetchPatientAnalysesByPatient = (patientId) => {
-  return axios.get("http://localhost:8080/api/getPatientAnalyses", {
+  return axios.get("http://localhost:9314/api/getPatientAnalyses", {
     params: { patientId },
   });
 };
