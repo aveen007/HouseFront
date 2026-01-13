@@ -38,26 +38,26 @@ const ApproveCard = () => {
   // Fetch data
   useEffect(() => {
     setLoading(prev => ({ ...prev, allSymptoms: true }));
-    axios.get('http://localhost:8080/api/getSymptoms')
+    axios.get('http://localhost:9314/api/getSymptoms')
       .then(res => setAllSymptoms(res.data))
       .catch(err => console.error(err))
       .finally(() => setLoading(prev => ({ ...prev, allSymptoms: false })));
 
     setLoading(prev => ({ ...prev, insurance: true }));
-    axios.get('http://localhost:8080/api/getInsuranceCompanies')
+    axios.get('http://localhost:9314/api/getInsuranceCompanies')
       .then(res => setInsuranceCompanies(res.data))
       .catch(err => console.error(err))
       .finally(() => setLoading(prev => ({ ...prev, insurance: false })));
 
     if (id) {
       setLoading(prev => ({ ...prev, patient: true }));
-      axios.get(`http://localhost:8080/api/getPatient?patientId=${id}`)
+      axios.get(`http://localhost:9314/api/getPatient?patientId=${id}`)
         .then(res => setPatient(res.data))
         .catch(err => console.error(err))
         .finally(() => setLoading(prev => ({ ...prev, patient: false })));
 
       setLoading(prev => ({ ...prev, visit: true }));
-      axios.get('http://localhost:8080/api/getVisitPatients')
+      axios.get('http://localhost:9314/api/getVisitPatients')
         .then(res => {
           const patientVisit = res.data.find(p => p.id === parseInt(id));
           if (patientVisit) setVisitId(patientVisit.visitId);
@@ -70,7 +70,7 @@ const ApproveCard = () => {
   useEffect(() => {
     if (visitId && allSymptoms.length > 0) {
       setLoading(prev => ({ ...prev, symptoms: true }));
-      axios.get(`http://localhost:8080/api/getVisitSymptoms?visitId=${visitId}`)
+      axios.get(`http://localhost:9314/api/getVisitSymptoms?visitId=${visitId}`)
         .then(res => {
           const mappedSymptoms = res.data.map(symId => {
             const s = allSymptoms.find(a => a.id === symId);
@@ -92,7 +92,7 @@ const ApproveCard = () => {
 
     try {
       await axios.put(
-        `http://localhost:8080/api/visits/${visitId}/updateHDStatus`,
+        `http://localhost:9314/api/visits/${visitId}/updateHDStatus`,
         `"Accepted"`,
         { headers: { 'Content-Type': 'application/json' } }
       );

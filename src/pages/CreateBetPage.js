@@ -27,14 +27,14 @@ const CreateBetPage = () => {
     // Fetch patient data
     if (id) {
       setLoading(true);
-      axios.get(`http://localhost:8080/api/getPatient?patientId=${id}`)
+      axios.get(`http://localhost:9314/api/getPatient?patientId=${id}`)
         .then(response => {
           setPatient(response.data);
         })
         .catch(error => console.error("Error fetching patient", error));
 
       // Fetch visit ID for this patient
-      axios.get('http://localhost:8080/api/getVisitPatients')
+      axios.get('http://localhost:9314/api/getVisitPatients')
         .then(response => {
           const patientVisit = response.data.find(p => p.id === parseInt(id));
           if (patientVisit) {
@@ -66,7 +66,7 @@ const CreateBetPage = () => {
     };
 
     // Here you would connect to your API to create the bet
-    axios.post('http://localhost:8080/api/createBet', betToCreate)
+    axios.post('http://localhost:9314/api/createBet', betToCreate)
       .then(response => {
         // After successful creation, navigate back to patient card
         navigate(`/patients/${id}`);

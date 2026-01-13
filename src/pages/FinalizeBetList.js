@@ -54,14 +54,14 @@ const FinalizeBetList = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const patientsResponse = await axios.get('http://localhost:8080/api/getBetPatients');
+        const patientsResponse = await axios.get('http://localhost:9314/api/getBetPatients');
         const allPatients = patientsResponse.data;
 
         const patientsWithBetsData = await Promise.all(
           allPatients.map(async (patient) => {
             try {
               const betsResponse = await axios.get(
-                `http://localhost:8080/api/getVisitBets?visitId=${patient.visitId}`
+                `http://localhost:9314/api/getVisitBets?visitId=${patient.visitId}`
               );
               if (betsResponse.data && betsResponse.data.length > 0) {
                 return { ...patient, hasBets: true };

@@ -34,7 +34,7 @@ const PatientCard = () => {
   useEffect(() => {
     // Fetch all available symptoms
     setLoading(prev => ({...prev, allSymptoms: true}));
-    axios.get('http://localhost:8080/api/getSymptoms')
+    axios.get('http://localhost:9314/api/getSymptoms')
       .then(response => {
         setAllSymptoms(response.data);
       })
@@ -43,7 +43,7 @@ const PatientCard = () => {
 
     // Fetch insurance companies
     setLoading(prev => ({...prev, insurance: true}));
-    axios.get('http://localhost:8080/api/getInsuranceCompanies')
+    axios.get('http://localhost:9314/api/getInsuranceCompanies')
       .then(response => {
         setInsuranceCompanies(response.data);
       })
@@ -53,7 +53,7 @@ const PatientCard = () => {
     if (id) {
       // Fetch patient data
       setLoading(prev => ({...prev, patient: true}));
-      axios.get(`http://localhost:8080/api/getPatient?patientId=${id}`)
+      axios.get(`http://localhost:9314/api/getPatient?patientId=${id}`)
         .then(response => {
           setPatient(response.data);
         })
@@ -62,7 +62,7 @@ const PatientCard = () => {
 
       // Fetch visit ID for this patient
       setLoading(prev => ({...prev, visit: true}));
-      axios.get('http://localhost:8080/api/getVisitPatients')
+      axios.get('http://localhost:9314/api/getVisitPatients')
         .then(response => {
           const patientVisit = response.data.find(p => p.id === parseInt(id));
           if (patientVisit) {
@@ -78,7 +78,7 @@ const PatientCard = () => {
     if (visitId && allSymptoms.length > 0) { // Only fetch when we have both visitId and allSymptoms
       setLoading(prev => ({...prev, symptoms: true}));
 
-      axios.get(`http://localhost:8080/api/getVisitSymptoms?visitId=${visitId}`)
+      axios.get(`http://localhost:9314/api/getVisitSymptoms?visitId=${visitId}`)
         .then(response => {
           // Map symptom IDs to symptom names using allSymptoms
           const symptomsWithDetails = response.data.map(visitSymptom => {

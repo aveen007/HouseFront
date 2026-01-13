@@ -45,7 +45,7 @@ const PatientForm = () => {
     });
   useEffect(() => {
     // Fetch insurance companies
-    axios.get('http://localhost:8080/api/getInsuranceCompanies')
+    axios.get('http://localhost:9314/api/getInsuranceCompanies')
       .then(response => {
         setInsuranceCompanies(response.data);
       })
@@ -53,7 +53,7 @@ const PatientForm = () => {
 
     if (id) {
       // Fetch patient data for editing
-      axios.get(`http://localhost:8080/api/getPatient?patient_id=${id}`)
+      axios.get(`http://localhost:9314/api/getPatient?patient_id=${id}`)
         .then(response => {
           setPatient(response.data);
         })

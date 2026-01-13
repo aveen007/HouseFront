@@ -34,11 +34,11 @@ const FinalizeBetPage = () => {
         setSelectedBetId(null); // Reset selection when data reloads
 
         // Step 1: Fetch patient data
-        const patientResponse = await axios.get(`http://localhost:8080/api/getPatient?patientId=${id}`);
+        const patientResponse = await axios.get(`http://localhost:9314/api/getPatient?patientId=${id}`);
         setPatient(patientResponse.data);
 
         // Step 2: Get all bet patients to find this patient's visitId
-        const betPatientsResponse = await axios.get('http://localhost:8080/api/getBetPatients');
+        const betPatientsResponse = await axios.get('http://localhost:9314/api/getBetPatients');
         const betPatient = betPatientsResponse.data.find(p => p.id === parseInt(id));
 
         if (!betPatient) {
@@ -48,7 +48,7 @@ const FinalizeBetPage = () => {
         setVisitId(betPatient.visitId);
 
         // Step 3: Get bets for this visit
-        const betsResponse = await axios.get(`http://localhost:8080/api/getVisitBets?visitId=${betPatient.visitId}`);
+        const betsResponse = await axios.get(`http://localhost:9314/api/getVisitBets?visitId=${betPatient.visitId}`);
         setBets(betsResponse.data);
         console.log(betsResponse.data);
       } catch (err) {
@@ -81,7 +81,7 @@ const FinalizeBetPage = () => {
       amount: selectedBet.amount
     };
 
-    axios.post(`http://localhost:8080/api/finalizeBet`, finalizeData)
+    axios.post(`http://localhost:9314/api/finalizeBet`, finalizeData)
       .then(() => {
         navigate(`/patients/${id}`);
       })

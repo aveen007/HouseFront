@@ -22,7 +22,7 @@ const PatientsPage = () => {
 
   useEffect(() => {
 
-   axios.get('http://localhost:8080/api/getBetPatients')
+   axios.get('http://localhost:9314/api/getBetPatients')
        .then(response => setPatients(response.data))
              .catch(error => console.error("Error fetching patients", error));
          }, []);
