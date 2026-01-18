@@ -18,6 +18,7 @@ import ReviewProposals from './pages/ReviewProposals'
 import ApprovedTests from './pages/ApprovedTests'
 import ConsentForm from './pages/ConsentForm'
 import ApproveCard from './pages/ApproveCard'
+import VisitsPage from './pages/VisitsPage'
 
 function App() {
   return (
@@ -49,6 +50,8 @@ function App() {
           <Route path="/propose-analysis/:patientId" element={<ProposeAnalyses />} />
           <Route path="/approve-card/:id" element={<ApproveCard />} />
            <Route path="/patients/:id/FinalizeBets" element={<FinalizeBetPage />} />
+           <Route path="/VisitsPage" element={<VisitsPage />} />
+//           <Route path="/patients/:id/FinalizeBets" element={<FinalizeBetPage />} />
 
             {/* <Route path="/reports" element={<ReportsPage />} /> */}
             {/* <Route path="/symptoms" element={<SymptomManagementPage />} /> */}

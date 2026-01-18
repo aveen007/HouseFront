@@ -105,3 +105,8 @@ export const signContract = (contractId, payload) => {
     { headers: { 'Content-Type': 'application/json' } }
   );
 };
+
+
+export const fetchHDAwaitingVisits = () => {
+  return axios.get(`${API_BASE_URL}/visits/getAllHDAwaitingVisits`);
+};

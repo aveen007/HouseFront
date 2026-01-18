@@ -35,6 +35,9 @@ const Header = () => {
                                                                                       ConsentForm
                                                                                     </NavLink>
 
+ <NavLink to="/VisitsPage" style={styles.link}>
+                                                                                      Visits
+                                                                                    </NavLink>
 
                     </nav>
         </header>
