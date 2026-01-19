@@ -23,6 +23,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:ui": "node tests/ui/run-ui-tests.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -49,9 +50,12 @@
     "add": "^2.0.6",
     "autoprefixer": "^10.4.21",
     "babel-jest": "^29.7.0",
+    "chromedriver": "^143.0.4",
+    "geckodriver": "^6.1.0",
     "jest-environment-jsdom": "^29.7.0",
     "or": "^0.2.0",
     "postcss": "^8.5.4",
+    "selenium-webdriver": "^4.40.0",
     "tailwindcss": "^4.1.18",
     "ts-jest": "^29.3.0",
     "yarn": "^1.22.22"
