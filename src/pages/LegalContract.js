@@ -6,25 +6,24 @@ import {
   signContract
 } from '../api';
 
-const PATIENT_ID = 6;
 
-const LegalContract = () => {
+const LegalContract = ({user}) => {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
+   const patientId = user?.patientId;
+useEffect(() => {
+    if (!patientId) return;
 
-  /* ---------------- LOAD CONTRACT ---------------- */
-  useEffect(() => {
     const loadContract = async () => {
       try {
-        const res = await fetchContractsByPatient(PATIENT_ID);
+        const res = await fetchContractsByPatient(patientId);
 
         if (!res.data || res.data.length === 0) {
           alert('No contract found for this patient');
           return;
         }
 
-        // pick latest contract (simple strategy)
         const latest = res.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         )[0];
@@ -39,29 +38,23 @@ const LegalContract = () => {
     };
 
     loadContract();
-  }, []);
+  }, [patientId]);
 
   /* ---------------- SIGN FLOW ---------------- */
   const handleAgreeAndSign = async () => {
-    if (!contract) return;
+    if (!contract || !patientId) return;
 
     try {
       setSigning(true);
 
-      // 1️⃣ Ensure status is READY
       if (contract.status !== 'READY') {
         await updateContractStatus(contract.contractId, 'READY');
-
-        setContract(prev => ({
-          ...prev,
-          status: 'READY'
-        }));
+        setContract(prev => ({ ...prev, status: 'READY' }));
       }
 
-      // 2️⃣ Sign contract
       await signContract(contract.contractId, {
-        patientId: PATIENT_ID,
-        signedBy: 'Иван Иванов',
+        patientId,
+        signedBy: user.username,
         signature: 'e-signature-hash-12345'
       });
 
@@ -71,7 +64,7 @@ const LegalContract = () => {
         ...prev,
         status: 'SIGNED',
         signedAt: new Date().toISOString(),
-        signedBy: 'Иван Иванов'
+        signedBy: user.username
       }));
     } catch (error) {
       console.error('Signing failed', error);
@@ -82,17 +75,11 @@ const LegalContract = () => {
   };
 
   /* ---------------- UI ---------------- */
-  if (loading) {
-    return <div className="loading">Loading contract...</div>;
-  }
-
-  if (!contract) {
-    return <div className="error">No contract available</div>;
-  }
+  if (loading) return <div className="loading">Loading contract...</div>;
+  if (!contract) return <div className="error">No contract available</div>;
 
   return (
     <div className="legal-contract-container">
-      {/* Header */}
       <div className="contract-header">
         <h1>{contract.termsTitle}</h1>
         <p className="subtitle">
@@ -100,14 +87,12 @@ const LegalContract = () => {
         </p>
       </div>
 
-      {/* Contract Content */}
       <div className="contract-content">
         <pre className="terms-text">
           {contract.termsSnapshot}
         </pre>
       </div>
 
-      {/* Action */}
       <div className="action-section">
         <button
           className="agree-sign-button"

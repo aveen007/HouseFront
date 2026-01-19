@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchHDAcceptedVisits,fetchPatients , fetchInsuranceCompanies, fetchPatientContracts, fetchBetPatients } from '../api';
-
+import api from '../api'
 import axios from 'axios';
 import {
   Container,
@@ -22,11 +22,6 @@ const PatientsPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-
-//   axios.get('http://localhost:9314/api/getBetPatients')
-//       .then(response => setPatients(response.data))
-//             .catch(error => console.error("Error fetching patients", error));
-//         }, []);
 
 
 const loadData = async () => {

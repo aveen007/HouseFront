@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useNotifications } from './NotificationContext';
+import api from '../api'
+
 import {
   Container,
   Typography,
@@ -27,14 +29,14 @@ const CreateBetPage = () => {
     // Fetch patient data
     if (id) {
       setLoading(true);
-      axios.get(`http://localhost:9314/api/getPatient?patientId=${id}`)
+      api.get(`/getPatient?patientId=${id}`)
         .then(response => {
           setPatient(response.data);
         })
         .catch(error => console.error("Error fetching patient", error));
 
       // Fetch visit ID for this patient
-      axios.get('http://localhost:9314/api/getVisitPatients')
+      api.get('/getVisitPatients')
         .then(response => {
           const patientVisit = response.data.find(p => p.id === parseInt(id));
           if (patientVisit) {
@@ -66,7 +68,7 @@ const CreateBetPage = () => {
     };
 
     // Here you would connect to your API to create the bet
-    axios.post('http://localhost:9314/api/createBet', betToCreate)
+    api.post('/createBet', betToCreate)
       .then(response => {
         // After successful creation, navigate back to patient card
         navigate(`/Bets`);

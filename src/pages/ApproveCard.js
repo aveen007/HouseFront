@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../api'
 import {
   Container,
   Typography,
@@ -91,7 +92,7 @@ const ApproveCard = () => {
     if (!visitId || allSymptoms.length === 0) return;
 
     setLoading(prev => ({ ...prev, symptoms: true }));
-    axios.get(`http://localhost:9314/api/getVisitSymptoms?visitId=${visitId}`)
+    api.get(`/getVisitSymptoms?visitId=${visitId}`)
       .then(res => {
         const mappedSymptoms = res.data
           .map(symId => allSymptoms.find(a => a.id === symId))
@@ -111,8 +112,8 @@ const ApproveCard = () => {
     if (!visitId) return;
 
     try {
-      await axios.put(
-        `http://localhost:9314/api/visits/${visitId}/updateHDStatus`,
+      await api.put(
+        `/visits/${visitId}/updateHDStatus`,
         `"Accepted"`,
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -133,8 +134,8 @@ const ApproveCard = () => {
     if (!visitId) return;
 
     try {
-      await axios.put(
-        `http://localhost:9314/api/visits/${visitId}/updateHDStatus`,
+      await api.put(
+        `/visits/${visitId}/updateHDStatus`,
         `"Rejected"`,
         { headers: { 'Content-Type': 'application/json' } }
       );

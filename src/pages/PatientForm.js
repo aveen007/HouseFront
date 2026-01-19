@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createPatient ,updatePatient } from '../api';
+import { createPatient ,updatePatient, fetchInsuranceCompanies, fetchPatient } from '../api';
 import MuiAlert from '@mui/material/Alert';
+import { register } from '../auth.service';
 import axios from 'axios';
 import {
   Container,
@@ -45,15 +46,14 @@ const PatientForm = () => {
     });
   useEffect(() => {
     // Fetch insurance companies
-    axios.get('http://localhost:9314/api/getInsuranceCompanies')
+    fetchInsuranceCompanies()
       .then(response => {
         setInsuranceCompanies(response.data);
       })
       .catch(error => console.error("Error fetching insurance companies", error));
 
     if (id) {
-      // Fetch patient data for editing
-      axios.get(`http://localhost:9314/api/getPatient?patient_id=${id}`)
+      fetchPatient(id)
         .then(response => {
           setPatient(response.data);
         })
@@ -72,28 +72,54 @@ const PatientForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (id) {
-      updatePatient(patient)
-        .then(() => {
-          navigate('/patients');
-        })
-        .catch(error => console.error("Error updating patient", error));
-    } else {
-       const transformedData = transformToBackendFormat(patient);
-       console.log(transformedData);
-      createPatient(transformedData)
-        .then(() => {
-          navigate('/patients');
-        })
-        .catch(error => {const errorMsg = error?.response?.data || "An error occurred while creating the patient.";
-                            setSnackbarMessage(errorMsg);
-                            setSnackbarOpen(true);
-                            console.log("xi");
-                            console.error("Error creating patient", error);})
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!patient.first_name || !patient.last_name) return; // basic validation
+
+  if (id) {
+    // Update existing patient
+    updatePatient(patient)
+      .then(() => navigate('/patients'))
+      .catch(error => {
+        const errorMsg = error?.response?.data || "An error occurred while updating the patient.";
+        setSnackbarMessage(errorMsg);
+        setSnackbarOpen(true);
+        console.error("Error updating patient", error);
+      });
+  } else {
+    // Creating new patient
+    const transformedData = transformToBackendFormat(patient);
+    console.log(transformedData)
+    try {
+      const createdPatient = await createPatient(transformedData);
+      console.log("Patient created:", createdPatient);
+
+      // Automatically register auth user for this patient
+      const username = `${patient.first_name.toLowerCase()}.${patient.last_name.toLowerCase()}`;
+      const password = "123"; // default password
+      const fullName = `${patient.first_name} ${patient.last_name}`;
+
+      const authPayload = {
+        username,
+        password,
+        fullName,
+        role: "PATIENT",
+        patientId: createdPatient.data.id // assuming createPatient returns patient ID
+      };
+
+      const authUser = await register(authPayload);
+      console.log("Auth user created:", authUser);
+
+      alert(`Patient and account created successfully!\nUsername: ${username}\nPassword: ${password}`);
+      navigate('/patients');
+    } catch (error) {
+      const errorMsg = error?.response?.data || "An error occurred while creating the patient.";
+      setSnackbarMessage(errorMsg);
+      setSnackbarOpen(true);
+      console.error("Error creating patient/auth user", error);
     }
-  };
+  }
+};
 console.log(patient);
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>

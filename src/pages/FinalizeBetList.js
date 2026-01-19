@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import api from '../api'
+
 import { useNotifications } from './NotificationContext';
 import {
   Container,
@@ -54,14 +56,14 @@ const FinalizeBetList = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const patientsResponse = await axios.get('http://localhost:9314/api/getBetPatients');
+        const patientsResponse = await api.get('/getBetPatients');
         const allPatients = patientsResponse.data;
 
         const patientsWithBetsData = await Promise.all(
           allPatients.map(async (patient) => {
             try {
-              const betsResponse = await axios.get(
-                `http://localhost:9314/api/getVisitBets?visitId=${patient.visitId}`
+              const betsResponse = await api.get(
+                `/getVisitBets?visitId=${patient.visitId}`
               );
               if (betsResponse.data && betsResponse.data.length > 0) {
                 return { ...patient, hasBets: true };

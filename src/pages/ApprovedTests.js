@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import "./ApprovedTests.css";
 import axios from "axios";
+import api from '../api'
+
 import {
   fetchApprovedAnalyses,
   fetchPatients,
@@ -85,8 +87,8 @@ const ApprovedTests = () => {
           await updatePatientAnalysisStatus(test.id, 4);
 
           // 2️⃣ Create analysis result
-          await axios.post(
-            "http://localhost:9314/api/createAnalysisResult",
+          await api.post(
+            "/createAnalysisResult",
             {
               patientAnalysisId: test.id,
               result: results[test.id] || "",

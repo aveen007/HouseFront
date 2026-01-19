@@ -6,11 +6,12 @@ import {
   updatePatientAnalysisStatus,
 } from "../api";
 
-const ConsentForm = ({ patientId }) => {
+const ConsentForm = ({ user }) => {
   const [formData, setFormData] = useState({});
   const [analyses, setAnalyses] = useState([]);
   const [analysisTypesMap, setAnalysisTypesMap] = useState({});
-
+const patientId = user?.patientId;
+console.log(patientId)
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -23,7 +24,7 @@ const ConsentForm = ({ patientId }) => {
         setAnalysisTypesMap(typesMap);
 
         // Fetch patient analyses
-        const paRes = await fetchPatientAnalysesByPatient(6);
+        const paRes = await fetchPatientAnalysesByPatient(patientId);
 
         // 🔹 Only keep AwaitingPat analyses
         const awaitingPatAnalyses = paRes.data.filter(
