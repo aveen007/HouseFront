@@ -1,10 +1,12 @@
 // ApprovedTests.js
 import React, { useEffect, useState } from "react";
 import "./ApprovedTests.css";
+import axios from "axios";
 import {
   fetchApprovedAnalyses,
   fetchPatients,
   fetchAnalysisTypes,
+  updatePatientAnalysisStatus,
 } from "../api";
 
 const statusClass = (status) => {
@@ -14,7 +16,7 @@ const statusClass = (status) => {
     case "In Progress":
       return "status-progress";
     case "Accepted":
-      return "status-pending"; // reuse style or rename if you want
+      return "status-pending";
     default:
       return "";
   }
@@ -22,6 +24,7 @@ const statusClass = (status) => {
 
 const ApprovedTests = () => {
   const [tests, setTests] = useState([]);
+  const [results, setResults] = useState({}); // store textbox values
 
   useEffect(() => {
     const loadData = async () => {
@@ -39,18 +42,26 @@ const ApprovedTests = () => {
 
         const analysisMap = {};
         analysesRes.data.forEach((a) => {
-          analysisMap[a.id] = a.title; // same as last time
+          analysisMap[a.id] = a.title;
         });
 
         const rows = approvedRes.data.map((a) => ({
-          id: a.id,
+          id: a.id, // patientAnalysisId
+          patientId: a.patientId,
           name: patientMap[a.patientId] || "Unknown",
           type: analysisMap[a.analysisId] || "Unknown Test",
           date: a.date,
-          status: a.status, // "Accepted"
+          status: a.status,
         }));
 
+        // init empty results
+        const initialResults = {};
+        rows.forEach((r) => {
+          initialResults[r.id] = "";
+        });
+
         setTests(rows);
+        setResults(initialResults);
       } catch (err) {
         console.error("Failed to load approved tests", err);
       }
@@ -58,6 +69,43 @@ const ApprovedTests = () => {
 
     loadData();
   }, []);
+
+  const handleResultChange = (id, value) => {
+    setResults((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleMarkAllComplete = async () => {
+    try {
+      await Promise.all(
+        tests.map(async (test) => {
+          // 1️⃣ Update status to 4 (Finished)
+          await updatePatientAnalysisStatus(test.id, 4);
+
+          // 2️⃣ Create analysis result
+          await axios.post(
+            "http://localhost:9314/api/createAnalysisResult",
+            {
+              patientAnalysisId: test.id,
+              result: results[test.id] || "",
+            }
+          );
+        })
+      );
+
+      alert("All analyses marked as completed ✅");
+
+      // Optional: update UI status
+      setTests((prev) =>
+        prev.map((t) => ({ ...t, status: "Completed" }))
+      );
+    } catch (err) {
+      console.error("Failed to complete analyses", err);
+      alert("Failed to mark analyses as complete ❌");
+    }
+  };
 
   return (
     <div className="approved-tests-container">
@@ -70,6 +118,7 @@ const ApprovedTests = () => {
             <th>Test Type</th>
             <th>Date Assigned</th>
             <th>Status</th>
+            <th>Result</th>
           </tr>
         </thead>
 
@@ -84,18 +133,24 @@ const ApprovedTests = () => {
                   {test.status}
                 </span>
               </td>
+              <td>
+                <textarea
+                  className="result-textbox"
+                  placeholder="Enter analysis result..."
+                  value={results[test.id] || ""}
+                  onChange={(e) =>
+                    handleResultChange(test.id, e.target.value)
+                  }
+                />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <div className="upload-section">
-        <div className="upload-box">
-          <input type="file" id="fileUpload" className="file-input" />
-          <label htmlFor="fileUpload">Browse Files</label>
-        </div>
-        <button className="complete-btn">Mark All As Complete</button>
-      </div>
+      <button className="complete-btn" onClick={handleMarkAllComplete}>
+        Mark All As Complete
+      </button>
     </div>
   );
 };

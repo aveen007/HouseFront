@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchHDAwaitingVisits,fetchPatients , fetchInsuranceCompanies } from '../api';
+import { fetchHDAwaitingVisits,fetchPatients , fetchInsuranceCompanies, fetchbet } from '../api';
 import {
   Container,
   Typography,
@@ -18,39 +18,38 @@ import {
 
 const VisitsPage = () => {
   const [patients, setPatients] = useState([]);
+  const [visitsWithPatientInfo, setVisitsWithPatientInfo] = useState([]);
 
   const [insuranceCompanies, setInsuranceCompanies] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-   const loadData = async () => {
-       try {
-         // 1️⃣ Fetch awaiting visits
-         const visitsRes = await fetchHDAwaitingVisits();
-         const awaitingVisits = visitsRes.data;
+    const loadData = async () => {
+      try {
+        // 1️⃣ Fetch awaiting visits
+        const visitsRes = await fetchHDAwaitingVisits();
+        const awaitingVisits = visitsRes.data; // each visit has patientId
 
-         // Extract patientIds from visits
-         const awaitingPatientIds = new Set(
-           awaitingVisits.map(v => v.patientId)
-         );
+        // 2️⃣ Fetch all patients
+        const patientsRes = await fetchPatients();
+        const allPatients = patientsRes.data;
 
-         // 2️⃣ Fetch all patients
-         const patientsRes = await fetchPatients();
-         const allPatients = patientsRes.data;
+        // 3️⃣ Merge patient info into each visit
+        const visitsWithInfo = awaitingVisits.map(visit => {
+          const patient = allPatients.find(p => p.id === visit.patientId);
+          return {
+            ...visit,
+            patient
+          };
+        });
 
-         // 3️⃣ Keep only patients with awaiting visits
-         const filteredPatients = allPatients.filter(p =>
-           awaitingPatientIds.has(p.id)
-         );
+        setVisitsWithPatientInfo(visitsWithInfo);
+      } catch (error) {
+        console.error('Error loading visits/patients', error);
+      }
+    };
 
-         // 4️⃣ Set patients
-         setPatients(filteredPatients);
-       } catch (error) {
-         console.error('Error loading patients/visits', error);
-       }
-     };
-
-     loadData();
+    loadData();
 
     fetchInsuranceCompanies()
       .then(response => setInsuranceCompanies(response.data))
@@ -58,16 +57,11 @@ const VisitsPage = () => {
   }, []);
 
 
-
-  const getCompanyName = (companyId) => {
-   console.log(insuranceCompanies);
-//   console.log(companyId.insuranceCompany.companyName);
-//   console.log(companyId?.id);
-
-    const company = insuranceCompanies.find(c => c.companyName === companyId.insuranceCompany.companyName);
-    return company ? company.companyName : 'Unknown';
-  };
-
+const getCompanyName = (visit) => {
+  const companyId = visit.patient?.insuranceCompany?.companyName;
+  const company = insuranceCompanies.find(c => c.companyName === companyId);
+  return company ? company.companyName : 'Unknown';
+};
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
@@ -98,51 +92,46 @@ const VisitsPage = () => {
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Date of Birth</TableCell>
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Gender</TableCell>
               <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Insurance Company</TableCell>
-<TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>
-  Propose Analysis
-</TableCell>
+              <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Visit Date</TableCell>
+
 <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>
   Approve Patient
 </TableCell>
 
             </TableRow>
           </TableHead>
-          <TableBody>
-            {patients.map((patient) => (
-              <TableRow
-                key={patient.patientId}
-                hover
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell>{patient.firstName}</TableCell>
-                <TableCell>{patient.lastName}</TableCell>
-                <TableCell>{formatDate(patient.dateOfBirth)}</TableCell>
-                <TableCell>
-                  {patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : 'Other'}
-                </TableCell>
-                <TableCell>{getCompanyName(patient)}</TableCell>
-<TableCell>
-  <Button
-    variant="outlined"
-    size="small"
-    onClick={() => navigate(`/propose-analysis/${patient.id}`)}
-  >
-    Propose
-  </Button>
-</TableCell>
+         <TableBody>
+           {visitsWithPatientInfo.map((visit) => (
+             <TableRow
+               key={visit.id} // use visit ID as key
+               hover
+               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+             >
+               <TableCell>{visit.patient?.firstName}</TableCell>
+               <TableCell>{visit.patient?.lastName}</TableCell>
+               <TableCell>{formatDate(visit.patient?.dateOfBirth)}</TableCell>
+               <TableCell>
+                 {visit.patient?.gender === 'M'
+                   ? 'Male'
+                   : visit.patient?.gender === 'F'
+                   ? 'Female'
+                   : 'Other'}
+               </TableCell>
+               <TableCell>{getCompanyName(visit)}</TableCell>
+               <TableCell>{formatDate(visit.dateOfVisit)}</TableCell> {/* NEW column */}
+               <TableCell>
+                 <Button
+                   variant="outlined"
+                   size="small"
+                   onClick={() => navigate(`/approve-card/${visit.id}`)}
+                 >
+                   Approve
+                 </Button>
+               </TableCell>
+             </TableRow>
+           ))}
+         </TableBody>
 
-<TableCell>
-  <Button
-    variant="outlined"
-    size="small"
-    onClick={() => navigate(`/approve-card/${patient.id}`)}
-  >
-    Approve
-  </Button>
-</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
         </Table>
       </TableContainer>
 

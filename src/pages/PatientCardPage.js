@@ -99,9 +99,9 @@ const PatientCard = () => {
   }, [visitId, allSymptoms]); // Depend on both visitId and allSymptoms
 
   // Find the patient's insurance company
-  const patientInsuranceCompany = insuranceCompanies.find(
-    company => company.id === patient.insuranceCompany.id
-  );
+const patientInsuranceCompany = insuranceCompanies.find(
+  company => company.id === patient?.insuranceCompany?.id
+);
 console.log(insuranceCompanies);
   const handleCreateBet = () => {
     navigate(`/patients/${id}/create-bet`);

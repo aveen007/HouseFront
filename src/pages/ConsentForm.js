@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./ConsentForm.css";
-import { fetchPatientAnalysesByPatient, fetchAnalysisTypes, updatePatientAnalysisStatus } from "../api";
+import {
+  fetchPatientAnalysesByPatient,
+  fetchAnalysisTypes,
+  updatePatientAnalysisStatus,
+} from "../api";
 
 const ConsentForm = ({ patientId }) => {
   const [formData, setFormData] = useState({});
@@ -14,22 +18,27 @@ const ConsentForm = ({ patientId }) => {
         const typesRes = await fetchAnalysisTypes();
         const typesMap = {};
         typesRes.data.forEach((a) => {
-          typesMap[a.id] = a.title; // adjust field name from backend
+          typesMap[a.id] = a.title;
         });
         setAnalysisTypesMap(typesMap);
 
         // Fetch patient analyses
         const paRes = await fetchPatientAnalysesByPatient(6);
 
-        const patientAnalyses = paRes.data.map((pa) => ({
+        // 🔹 Only keep AwaitingPat analyses
+        const awaitingPatAnalyses = paRes.data.filter(
+          (pa) => pa.status === "AwaitingPat"
+        );
+
+        const patientAnalyses = awaitingPatAnalyses.map((pa) => ({
           ...pa,
           name: typesMap[pa.analysisId] || "Unknown Test",
         }));
 
-        // Initialize formData to empty string (no choice yet)
+        // Initialize form data
         const initialForm = {};
         patientAnalyses.forEach((pa) => {
-          initialForm[pa.id] = ""; // values: "agree" or "decline"
+          initialForm[pa.id] = "";
         });
 
         setAnalyses(patientAnalyses);
@@ -43,39 +52,44 @@ const ConsentForm = ({ patientId }) => {
   }, [patientId]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
-const handleSubmit = async (e) => {
-  e.preventDefault();
 
-  try {
-    await Promise.all(
-      analyses.map((pa) => {
-        const choice = formData[pa.id];
-        let status;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        if (choice === "agree") status = "0"; // accepted
-        else if (choice === "decline") status = "2"; // rejected
-        else return null; // skip if no choice
+    try {
+      await Promise.all(
+        analyses.map((pa) => {
+          const choice = formData[pa.id];
+          let status;
 
-        // Use pa.id here, not pa.analysisId
-        console.log(pa.id)
-        console.log(status)
-        return updatePatientAnalysisStatus(pa.id, status);
-      })
+          if (choice === "agree") status = "3"; // accepted
+          else if (choice === "decline") status = "2"; // rejected
+          else return null;
+
+          return updatePatientAnalysisStatus(pa.id, status);
+        })
+      );
+
+      alert("Consent submitted successfully ✅");
+    } catch (err) {
+      console.error("Failed to submit consent", err);
+      alert("Failed to submit consent ❌");
+    }
+  };
+
+  if (analyses.length === 0) {
+    return (
+      <div className="consent-form-container">
+        <h2>No analyses awaiting your consent.</h2>
+      </div>
     );
-
-    alert("Consent submitted successfully ✅");
-  } catch (err) {
-    console.error("Failed to submit consent", err);
-    alert("Failed to submit consent ❌");
   }
-};
-
 
   return (
     <div className="consent-form-container">
@@ -94,9 +108,10 @@ const handleSubmit = async (e) => {
                   value="agree"
                   checked={formData[pa.id] === "agree"}
                   onChange={handleChange}
-                />{" "}
-                I Agree
+                />
+                {" "}I Agree
               </label>
+
               <label>
                 <input
                   type="radio"
@@ -104,14 +119,16 @@ const handleSubmit = async (e) => {
                   value="decline"
                   checked={formData[pa.id] === "decline"}
                   onChange={handleChange}
-                />{" "}
-                I Decline
+                />
+                {" "}I Decline
               </label>
             </div>
           </div>
         ))}
 
-        <button type="submit" className="submit-btn">SUBMIT CONSENT</button>
+        <button type="submit" className="submit-btn">
+          SUBMIT CONSENT
+        </button>
       </form>
     </div>
   );

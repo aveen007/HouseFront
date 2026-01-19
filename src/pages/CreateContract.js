@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './CreateContract.css';
-import { fetchPatients,createContract, fetchContractTerms } from '../api';
+import { fetchPatients, createContract, fetchContractTerms, fetchPatientContracts } from '../api';
 
 const CreateContract = () => {
   const [patients, setPatients] = useState([]);
@@ -18,7 +18,20 @@ const CreateContract = () => {
           fetchContractTerms()
         ]);
 
-        setPatients(patientsRes.data);
+        const allPatients = patientsRes.data;
+
+        // 🔍 Keep ONLY patients with NO contracts at all
+        const patientsWithoutContracts = await Promise.all(
+          allPatients.map(async (p) => {
+            const contractsRes = await fetchPatientContracts(p.id);
+            const contracts = contractsRes.data;
+
+            // ✅ include only if patient has ZERO contracts
+            return contracts.length === 0 ? p : null;
+          })
+        );
+
+        setPatients(patientsWithoutContracts.filter(Boolean));
         setTerms(termsRes.data.filter(t => t.isActive));
       } catch (error) {
         console.error('Failed to load data', error);
@@ -30,6 +43,7 @@ const CreateContract = () => {
 
     loadData();
   }, []);
+
 const handleSubmit = async (e) => {
   e.preventDefault();
 

@@ -110,3 +110,25 @@ export const signContract = (contractId, payload) => {
 export const fetchHDAwaitingVisits = () => {
   return axios.get(`${API_BASE_URL}/visits/getAllHDAwaitingVisits`);
 };
+export const fetchHDAcceptedVisits = () => {
+  return axios.get(`${API_BASE_URL}/visits/getAllAcceptedVisits`);
+};
+export const fetchBetPatients = () => {
+  return axios.get(`${API_BASE_URL}/getBetPatients`);
+};
+export const fetchPatientContracts = (patientId) => {
+  return axios.get(`${API_BASE_URL}/contracts/patient/${patientId}`);
+};
+export const getAwaitingHDAnalyses = () => {
+  return axios.get(`${API_BASE_URL}/getAwaitingHDAnalyses`);
+};
+
+export const createAnalysisResult = (patientAnalysisId, result) => {
+  return axios.post(
+    `${API_BASE_URL}/createAnalysisResult`,
+    {
+      patientAnalysisId,
+      result,
+    }
+  );
+};

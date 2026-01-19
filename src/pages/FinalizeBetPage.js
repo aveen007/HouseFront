@@ -83,7 +83,7 @@ const FinalizeBetPage = () => {
 
     axios.post(`http://localhost:9314/api/finalizeBet`, finalizeData)
       .then(() => {
-        navigate(`/patients/${id}`);
+        navigate(`/Bets`);
       })
       .catch(error => {
         console.error("Error finalizing bet", error);
