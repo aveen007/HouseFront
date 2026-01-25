@@ -26,6 +26,11 @@ export default function AuthPage({onLogin}) {
       // Redirect back to home or wherever you want
       navigate("/");
     } catch (err) {
+    console.log('🟡 handleSubmit fired');
+              console.log('🟡 username:', username);
+              console.log('🟡 password length:', password.length);
+              console.log('🟡 raw username value:', JSON.stringify(username));
+              console.log('🟡 raw password value:', JSON.stringify(password));
       console.error(err);
       setError("Invalid username or password");
       setLoading(false);

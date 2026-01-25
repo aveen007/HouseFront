@@ -1,33 +1,48 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { login } from '../api';
+import { login } from '../auth.service';
 import { setStoredAuth } from '../auth';
 
-const LoginPage = () => {
+const LoginPage = ({onLogin}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+const handleSubmit = async (event) => {
+  event.preventDefault();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setErrorMessage('');
-    setIsSubmitting(true);
 
-    try {
-      await login(username, password);
-      setStoredAuth({ username, password });
-      const redirectTo = location.state?.from?.pathname || '/patients';
-      navigate(redirectTo, { replace: true });
-    } catch (error) {
-      const status = error?.response?.status;
-      setErrorMessage(status === 401 ? 'Invalid username or password.' : 'Login failed.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  setErrorMessage('');
+
+  setIsSubmitting(true);
+
+  try {
+    // login now returns { token, userId, username, roles, patientId }
+    const data = await login(username, password);
+
+    // store JWT + user info, NOT password
+    setStoredAuth({
+      token: data.token,
+      userId: data.userId,
+      username: data.username,
+      roles: data.roles,
+      patientId: data.patientId,
+    });
+
+    // redirect after login
+    const redirectTo = location.state?.from?.pathname || '/patients';
+    navigate(redirectTo, { replace: true });
+  } catch (error) {
+    const status = error?.response?.status;
+
+
+    setErrorMessage(status === 401 ? 'Invalid username or password.' : 'Login failed.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div style={styles.container}>

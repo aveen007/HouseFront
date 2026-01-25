@@ -1,14 +1,24 @@
 import axios from 'axios';
+import { getAuthHeader } from './auth'; // JWT storage utility
 
- const API_BASE_URL = 'http://localhost:9314/api';    // For local development
-// const API_BASE_URL = 'http://localhost:8080/api';    // For local development
-//const API_BASE_URL = '/api';    // For deployment
+const API_BASE_URL = 'http://localhost:9314/api';
+
+// Axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // 🔴 REQUIRED
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+
+// ✅ Add interceptor to attach JWT automatically
+api.interceptors.request.use((config) => {
+  const token = getAuthHeader();
+  if (token) {
+    config.headers.Authorization = token;
+  }
+  return config;
 });
 
 export default api;

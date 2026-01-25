@@ -41,6 +41,15 @@ const PatientRegistrationPage = () => {
         : [...prev, symptomId]
     );
   };
+useEffect(() => {
+  fetchPatients()
+    .then(response =>
+      setPatients(
+        response.data.sort((a, b) => b.id - a.id)
+      )
+    )
+    .catch(console.error);
+}, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,9 +97,10 @@ const PatientRegistrationPage = () => {
               onChange={(e) => setSelectedPatient(e.target.value)}
               label="Select Patient"
               sx={{ height: '56px' }}
+              data-testid="visit-form-patient"
             >
               {patients.map(patient => (
-                <MenuItem key={patient.id} value={patient.id}>
+                <MenuItem key={patient.id} value={patient.id} data-testid={`visit-form-patient-option-${patient.id}`}>
                   {patient.firstName} {patient.lastName}
                 </MenuItem>
               ))}
@@ -117,6 +127,7 @@ const PatientRegistrationPage = () => {
                   py: 2,
                   '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
                 }}
+                data-testid={`visit-form-symptom-${symptom.id}`}
               >
                 <Checkbox
                   edge="start"
@@ -140,6 +151,7 @@ const PatientRegistrationPage = () => {
             fullWidth
             disabled={isSubmitting}
             sx={{ py: 2, fontSize: '1.1rem' }}
+            data-testid="visit-form-submit"
           >
             {isSubmitting ? <CircularProgress size={24} /> : 'Create Patient Card'}
           </Button>

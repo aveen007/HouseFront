@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createPatient ,updatePatient, fetchInsuranceCompanies, fetchPatient } from '../api';
+import { createPatient, updatePatient, fetchInsuranceCompanies, fetchPatient } from '../api';
 import MuiAlert from '@mui/material/Alert';
 import { register } from '../auth.service';
-import axios from 'axios';
 import {
   Container,
   Typography,
@@ -15,10 +14,10 @@ import {
   Button,
   Box,
   Paper,
-   Snackbar,
-    Alert,
+  Snackbar,
   Grid
 } from '@mui/material';
+
 const transformToBackendFormat = (data) => ({
   firstName: data.first_name,
   lastName: data.last_name,
@@ -41,9 +40,11 @@ const PatientForm = () => {
   const { id } = useParams();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+
   const Alert = React.forwardRef(function Alert(props, ref) {
-      return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-    });
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
+
   useEffect(() => {
     // Fetch insurance companies
     fetchInsuranceCompanies()
@@ -60,9 +61,10 @@ const PatientForm = () => {
         .catch(error => console.error("Error fetching patient", error));
     }
   }, [id]);
-    const handleSnackbarClose = () => {
-      setSnackbarOpen(false);
-    };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,55 +74,55 @@ const PatientForm = () => {
     }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!patient.first_name || !patient.last_name) return; // basic validation
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!patient.first_name || !patient.last_name) return; // basic validation
 
-  if (id) {
-    // Update existing patient
-    updatePatient(patient)
-      .then(() => navigate('/patients'))
-      .catch(error => {
-        const errorMsg = error?.response?.data || "An error occurred while updating the patient.";
+    if (id) {
+      // Update existing patient
+      updatePatient(patient)
+        .then(() => navigate('/patients'))
+        .catch(error => {
+          const errorMsg = error?.response?.data || "An error occurred while updating the patient.";
+          setSnackbarMessage(errorMsg);
+          setSnackbarOpen(true);
+          console.error("Error updating patient", error);
+        });
+    } else {
+      // Creating new patient
+      const transformedData = transformToBackendFormat(patient);
+      console.log(transformedData)
+      try {
+        const createdPatient = await createPatient(transformedData);
+        console.log("Patient created:", createdPatient);
+
+        // Automatically register auth user for this patient
+        const username = `${patient.first_name.toLowerCase()}.${patient.last_name.toLowerCase()}`;
+        const password = "123"; // default password
+        const fullName = `${patient.first_name} ${patient.last_name}`;
+
+        const authPayload = {
+          username,
+          password,
+          fullName,
+          role: "PATIENT",
+          patientId: createdPatient.data.id // assuming createPatient returns patient ID
+        };
+
+        const authUser = await register(authPayload);
+        console.log("Auth user created:", authUser);
+
+        alert(`Patient and account created successfully!\nUsername: ${username}\nPassword: ${password}`);
+        navigate('/patients');
+      } catch (error) {
+        const errorMsg = error?.response?.data || "An error occurred while creating the patient.";
         setSnackbarMessage(errorMsg);
         setSnackbarOpen(true);
-        console.error("Error updating patient", error);
-      });
-  } else {
-    // Creating new patient
-    const transformedData = transformToBackendFormat(patient);
-    console.log(transformedData)
-    try {
-      const createdPatient = await createPatient(transformedData);
-      console.log("Patient created:", createdPatient);
-
-      // Automatically register auth user for this patient
-      const username = `${patient.first_name.toLowerCase()}.${patient.last_name.toLowerCase()}`;
-      const password = "123"; // default password
-      const fullName = `${patient.first_name} ${patient.last_name}`;
-
-      const authPayload = {
-        username,
-        password,
-        fullName,
-        role: "PATIENT",
-        patientId: createdPatient.data.id // assuming createPatient returns patient ID
-      };
-
-      const authUser = await register(authPayload);
-      console.log("Auth user created:", authUser);
-
-      alert(`Patient and account created successfully!\nUsername: ${username}\nPassword: ${password}`);
-      navigate('/patients');
-    } catch (error) {
-      const errorMsg = error?.response?.data || "An error occurred while creating the patient.";
-      setSnackbarMessage(errorMsg);
-      setSnackbarOpen(true);
-      console.error("Error creating patient/auth user", error);
+        console.error("Error creating patient/auth user", error);
+      }
     }
-  }
-};
-console.log(patient);
+  };
+
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
@@ -140,6 +142,9 @@ console.log(patient);
                 required
                 variant="outlined"
                 sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+                inputProps={{
+                  'data-testid': 'patient-form-first-name'
+                }}
               />
             </Grid>
 
@@ -153,6 +158,9 @@ console.log(patient);
                 required
                 variant="outlined"
                 sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+                inputProps={{
+                  'data-testid': 'patient-form-last-name'
+                }}
               />
             </Grid>
 
@@ -168,38 +176,76 @@ console.log(patient);
                 variant="outlined"
                 InputLabelProps={{ shrink: true }}
                 sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+                inputProps={{
+                  'data-testid': 'patient-form-dob'
+                }}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required variant="outlined" sx={{ '& .MuiInputBase-root': { height: '56px' } }}>
+              <FormControl
+                fullWidth
+                required
+                variant="outlined"
+                sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+              >
                 <InputLabel>Gender</InputLabel>
                 <Select
                   name="gender"
                   value={patient.gender}
                   onChange={handleChange}
                   label="Gender"
+                  inputProps={{
+                    'data-testid': 'patient-form-gender'
+                  }}
                 >
                   <MenuItem value=""><em>Select Gender</em></MenuItem>
-                  <MenuItem value="M">Male</MenuItem>
-                  <MenuItem value="F">Female</MenuItem>
-                  <MenuItem value="O">Other</MenuItem>
+                  <MenuItem
+                    value="M"
+                    data-testid="patient-form-gender-M"
+                  >
+                    Male
+                  </MenuItem>
+                  <MenuItem
+                    value="F"
+                    data-testid="patient-form-gender-F"
+                  >
+                    Female
+                  </MenuItem>
+                  <MenuItem
+                    value="O"
+                    data-testid="patient-form-gender-O"
+                  >
+                    Other
+                  </MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
             <Grid item xs={12}>
-              <FormControl fullWidth required variant="outlined" sx={{ '& .MuiInputBase-root': { height: '56px' } }}>
+              <FormControl
+                fullWidth
+                required
+                variant="outlined"
+                sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+              >
                 <InputLabel>Insurance Company</InputLabel>
                 <Select
                   name="insurance_company_id"
                   value={patient.insurance_company_id}
                   onChange={handleChange}
                   label="Insurance Company"
+                  inputProps={{
+                    'data-testid': 'patient-form-insurance'
+                  }}
                 >
                   <MenuItem value=""><em>Select Insurance Company</em></MenuItem>
                   {insuranceCompanies.map(company => (
-                    <MenuItem key={company.id} value={company.id}>
+                    <MenuItem
+                      key={company.id}
+                      value={company.id}
+                      data-testid={`patient-form-insurance-${company.companyName.replace(/\s+/g, '-')}`}
+                    >
                       {company.companyName}
                     </MenuItem>
                   ))}
@@ -220,6 +266,7 @@ console.log(patient);
                     fontSize: '1.1rem',
                     height: '56px'
                   }}
+                  data-testid="patient-form-submit"
                 >
                   {id ? 'Save Changes' : 'Register Patient'}
                 </Button>
@@ -233,6 +280,7 @@ console.log(patient);
                     fontSize: '1.1rem',
                     height: '56px'
                   }}
+                  data-testid="patient-form-cancel"
                 >
                   Cancel
                 </Button>
@@ -241,15 +289,15 @@ console.log(patient);
           </Grid>
         </Box>
       </Paper>
-       {/* Error Snackbar */}
-           <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-             <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
-               {snackbarMessage}
-             </Alert>
-           </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
-
 
 export default PatientForm;

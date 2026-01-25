@@ -205,7 +205,7 @@ const ApproveCard = () => {
 
         {/* Approve/Reject Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button variant="contained" color="primary" onClick={handleApprovePatient}>
+          <Button variant="contained" color="primary" onClick={handleApprovePatient} data-testid='approve-card-approve'>
             Approve patient
           </Button>
           <Button variant="contained" color="secondary" onClick={handleRejectPatient}>

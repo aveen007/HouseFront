@@ -1,15 +1,23 @@
 // auth.service.js
 import axios from "axios";
-
+import { setStoredAuth, clearStoredAuth } from './auth';
 const BASE_URL = "http://localhost:9314"; // backend URL
 
-// Create an Axios instance with credentials enabled
+// Create Axios instance without withCredentials
 const api = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // important for session cookies
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+// ✅ Add interceptor to automatically attach JWT to all requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("jwtToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 /* =========================
@@ -20,18 +28,33 @@ const api = axios.create({
  * Login user
  * POST /auth/login
  * Body: { username, password }
- * Returns user object on success
+ * Stores JWT in localStorage
  */
+
 export const login = async (username, password) => {
   const res = await api.post("/auth/login", { username, password });
-  return res.data;
+  const data = res.data;
+
+  if (data.token) {
+    // Use the storage utility
+    setStoredAuth({
+      token: data.token,
+      userId: data.userId,
+      username: data.username
+    });
+  }
+console.log('Login successful!');
+console.log('Token stored at jwtToken:', localStorage.getItem('jwtToken'));
+console.log('Token stored at authCredentials:', localStorage.getItem('authCredentials'));
+console.log('Full localStorage:', { ...localStorage });
+  return data;
 };
 
+export const logout = () => {
+  clearStoredAuth();  // Use the utility
+};
 /**
  * Register new user
- * POST /auth/register
- * Body: { username, password, fullName, role?, patientId? }
- * Returns user object on success
  */
 export const register = async ({
   username,
@@ -51,7 +74,6 @@ export const register = async ({
 /**
  * Fetch current logged-in user
  * GET /auth/me
- * Returns user object, or throws 401 if not authenticated
  */
 export const fetchMe = async () => {
   try {
@@ -59,18 +81,11 @@ export const fetchMe = async () => {
     return res.data;
   } catch (err) {
     if (err.response && err.response.status === 401) {
-      // Not authenticated
+      // Token missing or invalid
       return null;
     }
     throw err;
   }
 };
 
-/**
- * Logout current user
- * POST /auth/logout
- * Returns nothing
- */
-export const logout = async () => {
-  await api.post("/auth/logout");
-};
+

@@ -92,10 +92,11 @@ const handleSubmit = async (e) => {
             onChange={(e) => setPatient(e.target.value)}
             className="patient-select"
             required
+            data-testid="create-contract-patient"
           >
             <option value="">-- Choose a patient --</option>
             {patients.map(p => (
-              <option key={p.id} value={p.id}>
+              <option key={p.id} value={p.id} data-testid={`create-contract-patient-option-${p.id}`}>
                 {p.firstName} {p.lastName}
               </option>
             ))}
@@ -117,6 +118,7 @@ const handleSubmit = async (e) => {
                     type="radio"
                     name="contractTerm"
                     value={term.termsId}
+                    data-testid={`create-contract-term-${term.termsId}`}
                     checked={selectedTermId === term.termsId}
                     onChange={() => setSelectedTermId(term.termsId)}
                   />
@@ -135,7 +137,7 @@ const handleSubmit = async (e) => {
 
         {/* ---------------- Actions ---------------- */}
         <div className="form-actions">
-          <button type="submit" className="save-button">
+          <button type="submit" className="save-button" data-testid="create-contract-save">
             Save Contract
           </button>
 

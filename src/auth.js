@@ -1,32 +1,47 @@
-const AUTH_STORAGE_KEY = 'authCredentials';
+const TOKEN_KEY = 'jwtToken';
+const USER_KEY = 'userInfo';
 
 export const getStoredAuth = () => {
   try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-    const parsed = JSON.parse(raw);
-    if (!parsed?.username || !parsed?.password) {
-      return null;
-    }
-    return parsed;
+    const token = localStorage.getItem(TOKEN_KEY);
+    const userRaw = localStorage.getItem(USER_KEY);
+    if (!token) return null;
+
+    return {
+      token,
+      ...(userRaw ? JSON.parse(userRaw) : {})
+    };
   } catch (error) {
     return null;
   }
 };
 
 export const setStoredAuth = (credentials) => {
-  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(credentials));
+  const { token, userId, username, ...rest } = credentials;
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify({ userId, username, ...rest }));
 };
 
 export const clearStoredAuth = () => {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+};
+export const getAuthHeader = () => {
+  const token = localStorage.getItem('jwtToken');
+  return token ? `Bearer ${token}` : null;
 };
 
-export const getBasicAuthHeader = (credentials) => {
-  const value = `${credentials.username}:${credentials.password}`;
-  return `Basic ${btoa(value)}`;
+export const isAuthenticated = () => {
+  return !!localStorage.getItem('jwtToken');
 };
 
-export const isAuthenticated = () => !!getStoredAuth();
+export const getStoredUserInfo = () => {
+  try {
+    return {
+      userId: localStorage.getItem('userId'),
+      username: localStorage.getItem('username')
+    };
+  } catch {
+    return null;
+  }
+};

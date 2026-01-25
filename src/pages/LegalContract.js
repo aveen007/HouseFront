@@ -96,6 +96,7 @@ useEffect(() => {
       <div className="action-section">
         <button
           className="agree-sign-button"
+          data-testid='legal-contract-sign'
           onClick={handleAgreeAndSign}
           disabled={signing || contract.status === 'SIGNED'}
         >

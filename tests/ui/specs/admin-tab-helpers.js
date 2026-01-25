@@ -23,6 +23,7 @@ async function waitForAnyVisible(driver, locators, timeoutMs) {
   );
 }
 
+
 async function waitForVisible(driver, locator, timeoutMs) {
   const element = await driver.wait(
     until.elementLocated(locator),
