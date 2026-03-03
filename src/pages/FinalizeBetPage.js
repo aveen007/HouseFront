@@ -142,14 +142,19 @@ const FinalizeBetPage = () => {
               </TableHead>
               <TableBody>
                 {bets.map((bet) => (
-                  <TableRow key={bet.betId}>
+                  <TableRow key={bet.betId} data-testid={`finalize-bet-row-${bet.betId}`}>
                     <TableCell>
                       <Radio
                         checked={selectedBetId === bet.betId}
                         onChange={() => handleSelectBet(bet.betId)}
                         value={bet.betId}
                         name="bet-selection"
+                        data-testid={`finalize-bet-radio-${bet.betId}`}
+
+
+
                       />
+
                     </TableCell>
                     <TableCell>{bet.diagnosis}</TableCell>
                     <TableCell>${bet.amount}</TableCell>
@@ -162,24 +167,18 @@ const FinalizeBetPage = () => {
 
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-          <Button
-            variant="outlined"
-            onClick={() => navigate(`/patients/${id}`)}
-            size="large"
-          >
-            Cancel
-          </Button>
-          {bets.length > 0 && (
-            <Button
-              variant="contained"
-              color="secondary"
-              size="large"
-              onClick={handleFinalizeBet}
-              sx={{ backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
-            >
-              Finalize Selected Bet
-            </Button>
-          )}
+         <Button
+           variant="contained"
+           color="secondary"
+           size="large"
+           data-testid="finalize-selected-bet-btn"
+           onClick={handleFinalizeBet}
+           sx={{ backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
+         >
+           Finalize Selected Bet
+         </Button>
+
+
         </Box>
       </Paper>
     </Container>

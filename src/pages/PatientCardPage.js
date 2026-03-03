@@ -190,6 +190,7 @@ console.log(insuranceCompanies);
             variant="contained"
             color="primary"
             size="large"
+            data-testid={`create-bet`}
             onClick={handleCreateBet}
           >
             Create Bet

@@ -138,7 +138,7 @@ const FinalizeBetList = () => {
         <TableContainer component={Paper} elevation={3}>
           <Table sx={{ minWidth: 650 }} aria-label="patient table">
             <TableHead sx={{ bgcolor: 'primary.main' }}>
-              <TableRow>
+              <TableRow >
                 <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>First Name</TableCell>
                 <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Last Name</TableCell>
                 <TableCell sx={{ color: 'common.white', fontWeight: 'bold' }}>Actions</TableCell>
@@ -150,21 +150,24 @@ const FinalizeBetList = () => {
                   key={patient.id}
                   hover
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  data-testid={`finalize-bet-row-${patient.id}`}
                 >
                   <TableCell>{patient.firstName}</TableCell>
                   <TableCell>{patient.lastName}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => handleFinalizeBet(patient.id)}
-                      sx={{
-                        backgroundColor: '#4caf50',
-                        '&:hover': { backgroundColor: '#388e3c' }
-                      }}
-                    >
-                      Finalize Bet
-                    </Button>
+                   <Button
+                     variant="contained"
+                     color="secondary"
+                     data-testid={`finalize-bet-btn-${patient.id}`}
+                     onClick={() => handleFinalizeBet(patient.id)}
+                     sx={{
+                       backgroundColor: '#4caf50',
+                       '&:hover': { backgroundColor: '#388e3c' }
+                     }}
+                   >
+                     Finalize Bet
+                   </Button>
+
                   </TableCell>
                 </TableRow>
               ))}

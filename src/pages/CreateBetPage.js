@@ -102,8 +102,11 @@ const CreateBetPage = () => {
                 onChange={handleChange}
                 required
                 variant="outlined"
-                sx={{ '& .MuiInputBase-root': { height: '56px' } }}
+                inputProps={{
+                  'data-testid': 'create-bet-diagnosis'
+                }}
               />
+
             </Grid>
 
             <Grid item xs={12}>
@@ -116,7 +119,11 @@ const CreateBetPage = () => {
                 onChange={handleChange}
                 required
                 variant="outlined"
-                inputProps={{ step: "0.01", min: "0" }}
+                inputProps={{
+                  step: "0.01",
+                  min: "0",
+                  'data-testid': 'create-bet-amount'
+                }}
                 sx={{ '& .MuiInputBase-root': { height: '56px' } }}
               />
             </Grid>
@@ -136,6 +143,7 @@ const CreateBetPage = () => {
                   variant="contained"
                   color="primary"
                   size="large"
+                  data-testid={`create-bet-submit`}
                   sx={{ py: 2, fontSize: '1.1rem' }}
                 >
                   Create Bet

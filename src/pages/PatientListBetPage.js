@@ -105,6 +105,7 @@ const loadData = async () => {
             {patients.map((patient) => (
               <TableRow
                 key={patient.patient_id}
+                data-testid={`patient-row-${patient.id}`}
                 hover
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
@@ -114,6 +115,7 @@ const loadData = async () => {
                   <Button
                     variant="contained"
                     color="primary"
+                    data-testid={`go-to-bets-${patient.id}`}
                     onClick={() => handleViewPatient(patient.id)}
                   >
                     Go to Bets
